@@ -6,8 +6,8 @@ import folium
 # https://realpython.com/python-folium-web-maps-from-data/ 
 
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
-stations = pd.read_csv('data/StationsHolland.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
-connections = pd.read_csv('data/ConnectiesHolland.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=0)
+stations = pd.read_csv('data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
+connections = pd.read_csv('data/ConnectiesNationaal.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=0)
 
 # We maken een dictionary met de coördinaten van elk station gekoppeld aan het bijbehorende station
 station_coordinate = {}
@@ -38,5 +38,5 @@ for _, row in connections.iterrows():
         ).add_to(m)
 
 # we slaan de map op in een html file in de visualization map
-m.save("code/visualization/visualisation_map.html")
+m.save("code/visualization/visualization_map.html")
 
