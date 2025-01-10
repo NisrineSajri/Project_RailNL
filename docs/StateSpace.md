@@ -34,14 +34,14 @@ Full network:
 - Totaal = $\sum_{i=1}^{7} r^{i}$
 
 1. **State space**: 
-    - De state space zal bestaan uit verschillende combinaties van routes (n) zodat:
+    - De state space bestaat uit verschillende combinaties van routes *(n)* zodat:
         - Elke route een subset van de verbindingen dekt.
         - De totale reistijd voor elke route binnen het gegeven tijdsframe van 120 (of 180) minuten ligt.
         - Het totale aantal routes niet meer dan 7 (of 20) is.
         
     - De functie $P(n) = N \times (B-1)^{n-1}$ kan worden geïnterpreteerd als het aantal manieren waarop een route van lengte *(n)* kan worden gevormd, waarbij:
         - N is het aantal stations in de huidige route is.
-        - B is de gemiddelde vertakfactor is, wat het aantal mogelijke verbindingen vanaf elk station vertegenwoordigt.
+        - B is de gemiddelde vertakfactor, wat het aantal mogelijke verbindingen vanaf elk station vertegenwoordigt.
         - n is het aantal overstappen in de route is.
 
     - Dit helpt ons mogelijke route lengtes te genereren die passen binnen het tijdsframe.
@@ -49,7 +49,7 @@ Full network:
 2. **Beperkingen**:
     - Elke route moet een set van verbindingen tussen de stations dekken.
     - De maximale totale reistijd over alle routes moet worden geminimaliseerd en mag de opgegeven limiet niet overschrijden (dus niet meer dan 2 (of 3) uur in totaal).
-    - Het aantal routes *(T)* moet zo klein mogelijk zijn, terwijl nog steeds alle verbindingen gedekt worden.
+    - Het aantal trajecten *(T)* moet zo klein mogelijk zijn, terwijl nog steeds alle verbindingen gedekt worden.
 
 3. **Doelstelling**:
-    - Het doel is een combinatie van routes te vinden die K maximaliseert, wat inhoudt dat we de fractie *(p)* (de fractie van gedekte verbindingen) maximaliseren, terwijl we *(T)* en *(Min)* minimaliseren.
+    - Het doel is een combinatie van trajecten te vinden die K maximaliseert, wat inhoudt dat we de fractie *(p)* (de fractie van gedekte verbindingen) maximaliseren, terwijl we *(T)* en *(Min)* minimaliseren.
