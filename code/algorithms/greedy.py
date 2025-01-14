@@ -47,13 +47,23 @@ class Greedy:
         """
         route = Route()
         current_station = start_station.name
+        # Keep track of visited stations
+        visited_stations = set()  
 
         while True:
             station = self.network.stations[current_station]
+            # Mark the current station as visited
+            visited_stations.add(current_station)  
+
             # Get all valid possible connections from the current station
             possible_connections = []
-            for dest, conn in station.connections.items():
-                if not conn.used and route.total_time + conn.distance <= self.max_time:
+            for _, conn in station.connections.items():
+                dest_station_name = conn.get_other_station(current_station)
+                if (
+                    not conn.used and 
+                    route.total_time + conn.distance <= self.max_time and
+                    dest_station_name not in visited_stations  # Ensure station isn't revisited
+                ):
                     possible_connections.append(conn)
 
             if not possible_connections:
@@ -61,19 +71,18 @@ class Greedy:
 
             # Sort connections by unused connections at the destination
             scored_connections = []
-
             for conn in possible_connections:
-                # Get the destination station (other end of the connection)
                 dest_station_name = conn.get_other_station(current_station)
                 dest_station = self.network.stations[dest_station_name]
-                
-                # Count unused connections at the destination station (if not already cached)
-                unused_connections = sum(1 for c in dest_station.connections.values() if not c.used)
-                
-                # Add the scored connection with its unused connections count
+
+                # Count unused connections at the destination station
+                unused_connections = 0
+                for c in dest_station.connections.values():
+                    if not c.used:
+                        unused_connections += 1
+
                 scored_connections.append((unused_connections, conn))
 
-            # If no valid scored connections were found, break out of the loop
             if not scored_connections:
                 break
 
@@ -96,7 +105,7 @@ class Greedy:
         """
         Run the greedy algorithm to create routes.
         """
-        # Reset all connections
+        # Reset alle connections
         for conn in self.network.connections:
             conn.used = False
         self.network.routes.clear()
