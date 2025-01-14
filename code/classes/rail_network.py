@@ -40,7 +40,7 @@ class RailNetwork:
                 connection = Connection(
                     row['station1'],
                     row['station2'],
-                    int(row['distance'])
+                    float(row['distance'])
                 )
                 self.connections.append(connection)
                 self.stations[connection.station1].add_connection(connection)

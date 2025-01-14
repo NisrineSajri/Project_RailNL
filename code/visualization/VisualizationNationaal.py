@@ -7,7 +7,7 @@ import folium
 
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
 stations = pd.read_csv('data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
-connections = pd.read_csv('data/ConnectiesNationaal.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=0)
+connections = pd.read_csv('data/ConnectiesNationaal.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
 
 # We maken een dictionary met de coördinaten van elk station gekoppeld aan het bijbehorende station
 station_coordinate = {}
