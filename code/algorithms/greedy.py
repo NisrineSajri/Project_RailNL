@@ -1,20 +1,9 @@
 import random
 from typing import List, Tuple
-import os
-import sys
 
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
-# Now you can import from the classes module
 from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.station import Station
-from classes.connection import Connection
-from constants import STATIONS_FILE, CONNECTIONS_FILE
-
 
 class Greedy:
     def __init__(self, network: RailNetwork):
@@ -147,27 +136,3 @@ class Greedy:
 
         # Calculate and return quality
         return self.network.calculate_quality()
-
-
-# Main function for testing
-if __name__ == "__main__":
-    # Initialize the RailNetwork
-    network = RailNetwork()
-
-    # Load stations and connections
-    network.load_stations(STATIONS_FILE)
-    network.load_connections(CONNECTIONS_FILE)
-
-    # Print initial network details
-    print(f"Loaded {len(network.stations)} stations and {len(network.connections)} connections.")
-
-    # Run the Greedy algorithm
-    greedy = Greedy(network)
-    quality = greedy.runGreedy()
-
-    # Print results
-    print("\nRoutes created:")
-    for i, route in enumerate(network.routes):
-        print(f"Route {i + 1}: {route}")
-
-    print(f"\nNetwork quality: {quality}")
