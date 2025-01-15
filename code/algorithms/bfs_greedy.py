@@ -1,17 +1,8 @@
 from collections import deque
 from typing import List, Tuple, Optional
-import os
-import sys
-
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
 
 from classes.rail_network import RailNetwork
 from classes.route import Route
-from classes.connection import Connection
-from constants import STATIONS_FILE, CONNECTIONS_FILE
 
 class SimplifiedBFSAlgorithm:
     def __init__(self, rail_network: RailNetwork):
@@ -128,22 +119,3 @@ class SimplifiedBFSAlgorithm:
             new_route.connections_used = old_route.connections_used.copy()
         
         return quality, best_routes
-
-if __name__ == "__main__":
-    try:
-        network = RailNetwork()
-        network.load_stations(STATIONS_FILE)
-        network.load_connections(CONNECTIONS_FILE)
-        
-        bfs_algo = SimplifiedBFSAlgorithm(network)
-        best_quality, best_routes = bfs_algo.find_best_solution()
-        
-        from classes.solution_statistics import SolutionStatistics
-        stats = SolutionStatistics(best_quality, best_routes)
-        stats.print_stats()
-        
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        print(f"Current working directory: {os.getcwd()}")
-        print(f"Stations file path: {STATIONS_FILE}")
-        print(f"Connections file path: {CONNECTIONS_FILE}")
