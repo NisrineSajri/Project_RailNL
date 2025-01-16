@@ -38,7 +38,7 @@ class RouteHeuristics:
             time_penalty = 100  # Equal to cost of new route in scoring function
             
         # Score = nearby_unused - (normalized_time_cost) - new_route_penalty
-        return nearby_unused - (connection.distance / 120) - time_penalty
+        return nearby_unused - (connection.distance / 180) - time_penalty
     
     def get_best_connection(self, current_station: str, current_route_time: int, 
                           visited_stations: set = None) -> tuple[Connection, float]:
@@ -64,7 +64,7 @@ class RouteHeuristics:
                 continue
                 
             # Skip if adding this would exceed time limit
-            if current_route_time + connection.distance > 120:
+            if current_route_time + connection.distance > 180:
                 continue
                 
             score = self.calculate_connection_value(
