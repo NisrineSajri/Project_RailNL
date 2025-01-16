@@ -5,7 +5,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Define paths
 DATA_DIR = os.path.join(ROOT_DIR, "data")
-STATIONS_FILE = os.path.join(DATA_DIR, "StationsHolland.csv")
-CONNECTIONS_FILE = os.path.join(DATA_DIR, "ConnectiesHolland.csv")
+STATIONS_FILE = os.path.join(DATA_DIR, "StationsNationaal.csv")
+CONNECTIONS_FILE = os.path.join(DATA_DIR, "ConnectiesNationaal.csv")
 
 ""

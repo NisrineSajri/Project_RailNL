@@ -2,8 +2,6 @@
 # https://www.datacamp.com/tutorial/dijkstra-algorithm-in-python
 # https://stackoverflow.com/questions/69580769/redundant-checks-in-python-implementation-of-dijkstras-algorithm
 
-import random
-from typing import List, Tuple
 import os
 import sys
 from heapq import heapify, heappop, heappush
@@ -14,12 +12,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-from classes.rail_network import RailNetwork
-from classes.route import Route
-
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
-stations = pd.read_csv('data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
-connections = pd.read_csv('data/ConnectiesNationaal.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
+stations = pd.read_csv('data/StationsHolland.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
+connections = pd.read_csv('data/ConnectiesHolland.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
 
 class Graph:
     def __init__(self, graph: dict = {}):
@@ -93,11 +88,15 @@ class DijkstraAlgorithm:
     def __init__(self, graph):
         self.graph = graph
 
+
+
     def calculate_routes(self):
         """We berekenen de routes, deze functie returned de trajecten en de waarde van K"""
         # maximaal 7 trajecten van 120 minuten
-        max_minutes = 180
-        max_trajects = 20
+        max_minutes = 120
+        max_trajects = 7
+
+        start_stations = set()
 
         # hier slaan we de trajecten op
         trajects = []
@@ -119,14 +118,10 @@ class DijkstraAlgorithm:
 
             start_station = None
 
-            # we zoeken naar station (die nog niet visited is)
-            for station in self.graph.graph.keys():
-                if station not in visited:
+            # we kiezen hier een startstation
+            start_station = find_start_station()
 
-                    # dan zetten we dit station gelijk aan start station
-                    start_station = station
-                    break
-        
+
             if start_station is None:
                 break
 
@@ -135,6 +130,8 @@ class DijkstraAlgorithm:
                 # we vragen de dicitonary op met de kortste afstanden naar andere stations vanaf source
                 distances = self.graph.shortest_distances(start_station)
                 next_station = None
+                print("DOEI")
+                print(distances)
 
                 # we zetten shortest_distance gelijk aan oneindig
                 shortest_distance = float("inf")
@@ -187,14 +184,27 @@ class DijkstraAlgorithm:
         K = p * 1000 - (T * 100 - total_minutes)
         return trajects, K
 
+
+    def find_start_station(self):
+        for _, row in connections.iterrows():
+            if row['station1'] not in start_stations and row['station1'] not in visited:
+        
+                start_station = row['station1']
+                start_stations.add(start_station)
+                return(start_station)
+
+
+
 graph = Graph()
 graph.add_connections(connections)
 algorithm = DijkstraAlgorithm(graph)
 routes, K = algorithm.calculate_routes()
 
+
+# resultaten
 for i, (traject, minutes) in enumerate(routes):
     print(f"Traject {i + 1} ({minutes} minuten):")
     for start, end, distance in traject:
         print(F"{start} -> {end} ({distance} minuten)")
-
 print(f"Kwaliteit K: {K}")
+
