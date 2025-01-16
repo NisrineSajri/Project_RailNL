@@ -19,7 +19,7 @@ connections = pd.read_csv('data/ConnectiesHolland.csv', header=None, names=['sta
 
 class Graph:
     def __init__(self, graph: dict = {}):
-        self.graph = graph 
+        self.graph = graph
 
     def add_edge(self, node1, node2, weight):
         """Voegt een edge toe tussen twee nodes (beide kanten op) met een weight"""
@@ -88,109 +88,109 @@ class Graph:
 class DijkstraAlgorithm:
     def __init__(self, graph):
         self.graph = graph
+        self.max_minutes = 120
+        self.max_trajects = 7
+    
+    def calculate_start_station(self, start_stations, visited):
+        """We zoeken een startstation dat nog niet bezocht is"""
+        for _, row in connections.iterrows():
+            if row['station1'] not in start_stations and row['station1'] not in visited:
+                start_stations.add(row['station1'])
+                return(row['station1'])
+            
+    def find_next_station(self, start_station, visited, visited_connections):
+        """We zoeken het volgende station (met de kortste afstand)"""
+        # we vragen de dicitonary op met de kortste afstanden naar andere stations vanaf source
+        distances = self.graph.shortest_distances(start_station)
+        next_station = None
 
-    def calculate_routes(self):
+        # we zetten shortest_distance gelijk aan oneindig
+        shortest_distance = float("inf")
+
+        # we gaan alle andere stations af
+        for station, distance in distances.items():
+
+            # We kiezen alleen stations waar we nog niet geweest zijn (en niet naar zichzelf)
+            if station not in visited and station != start_station:
+
+                # we maken een frozenset (niet veranderbaar) van de connectie tussen start_station en station
+                connection = frozenset([start_station, station])
+
+                # als de connectie nog niet is geweest én de distance is korter dan shortest_distance
+                if connection not in visited_connections and distance < shortest_distance:
+                    next_station = station
+                    shortest_distance = distance
+        return next_station, shortest_distance
+
+    def traject(self, start_stations, visited_connections):
+        """We verwerken één traject"""
+        current_traject = []
+        current_minutes = 0
+
+        # we maken een set aan om de bezochte plekken in op te slaan
+        visited = set()
+
+        start_station = self.calculate_start_station(start_stations, visited)
+
+        while current_minutes < self.max_minutes:
+            next_station, shortest_distance = self.find_next_station(start_station, visited, visited_connections)
+
+            if next_station is None or current_minutes + shortest_distance > self.max_minutes:
+                break
+
+            # we voegen dit station toe aan de visited set
+            visited.add(next_station)
+
+            # we voegen deze verbinding toe aan het huidige trajet
+            current_traject.append((start_station, next_station, shortest_distance))
+
+            # we slaan deze connectie toe in de bezochte connecties van alles
+            visited_connections.add(frozenset([start_station, next_station]))
+
+            # we updaten de current_minutes
+            current_minutes = current_minutes + shortest_distance
+
+            # het nieuwe start station is die van de verbinding
+            start_station = next_station
+
+        return current_traject, current_minutes, visited_connections
+
+
+    def k_value(self, trajects, visited_connections):
+        """We berekenen de K"""
+        total_connections = len(connections)
+        p = len(visited_connections) / total_connections
+        T = len(trajects)
+        total_minutes = sum(minutes for _, minutes in trajects)
+        K = p * 1000 - (T * 100 - total_minutes)
+        return K
+    
+    def find_best_solution(self):
         """We berekenen de routes, deze functie returned de trajecten en de waarde van K"""
-        # maximaal 7 trajecten van 120 minuten
-        max_minutes = 120
-        max_trajects = 7
-
-        start_stations = set()
-
+        
         # hier slaan we de trajecten op
         trajects = []
-
-        # totale reistijd van alle trajecten
-        total_minutes = 0
 
         # we houden de bezochte connecties bij
         visited_connections = set()
 
-        while len(trajects) < max_trajects:
+        # we maken een lege set om de stations in op te slaan die al als startstation gebruikt zijn
+        start_stations = set()
 
-            # het huidige traject wordt opgeslagen
-            current_traject = []
-            current_minutes = 0
+        # zolang we 120 minuten niet overschreiden
+        while len(trajects) < self.max_trajects:
 
-            # we maken een set aan om de bezochte plekken in op te slaan
-            visited = set()
+            current_traject, current_minutes, new_connections = self.traject(start_stations, visited_connections)
+            trajects.append((current_traject, current_minutes))
+        
+        K = self.k_value(trajects, visited_connections)
+        return K, trajects
 
-            start_station = None
-
-            # we kiezen hier een startstation
-            for _, row in connections.iterrows():
-                if row['station1'] not in start_stations and row['station1'] not in visited:
-                    
-                    start_station = row['station1']
-                    start_stations.add(start_station)
-                    break
-
-            if start_station is None:
-                break
-
-            # zolang we het maximaal aantal minuten niet overschreiden
-            while current_minutes < max_minutes:
-                # we vragen de dicitonary op met de kortste afstanden naar andere stations vanaf source
-                distances = self.graph.shortest_distances(start_station)
-                next_station = None
-                print("DOEI")
-                print(distances)
-
-                # we zetten shortest_distance gelijk aan oneindig
-                shortest_distance = float("inf")
-
-                # we gaan alle andere stations af
-                for station, distance in distances.items():
-
-                    # We kiezen alleen stations waar we nog niet geweest zijn (en niet naar zichzelf)
-                    if station not in visited and station != start_station:
-
-                        # we maken een frozenset (niet veranderbaar) van de connectie tussen start_station en station
-                        connection = frozenset([start_station, station])
-
-                        # als de connectie nog niet is geweest én de distance is korter dan shortest_distance
-                        if connection not in visited_connections and distance < shortest_distance:
-                            next_station = station
-                            shortest_distance = distance
-
-                if next_station is None:
-                    break
-
-                # we checken of we over de 120 minuten zitten
-                if current_minutes + shortest_distance > max_minutes:
-                    break
-
-                # we voegen dit station toe aan de visited set
-                visited.add(next_station)
-
-                # we voegen deze verbinding toe aan het huidige trajet
-                current_traject.append((start_station, next_station, shortest_distance))
-
-                # we slaan deze connectie toe in de bezochte connecties van alles
-                visited_connections.add(frozenset([start_station, next_station]))
-
-                # we updaten de current_minutes
-                current_minutes = current_minutes + shortest_distance
-
-                # het nieuwe start station is die van de verbinding
-                start_station = next_station
-
-            # als er een traject bezig is, wordt deze toegevoegd aan trajects
-            if current_traject:
-                trajects.append((current_traject, current_minutes))
-                total_minutes = total_minutes + current_minutes
-
-        # we berekenen K
-        total_connections = len(connections)
-        p = len(visited_connections) / total_connections
-        T = len(trajects)
-        K = p * 1000 - (T * 100 - total_minutes)
-        return trajects, K
-
-graph = Graph()
-graph.add_connections(connections)
-algorithm = DijkstraAlgorithm(graph)
-routes, K = algorithm.calculate_routes()
+if __name__ == "__main__":
+    graph = Graph()
+    graph.add_connections(connections)
+    algorithm = DijkstraAlgorithm(graph)
+    K, routes = algorithm.calculate_routes()
 
 
 # resultaten
