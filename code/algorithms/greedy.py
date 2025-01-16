@@ -33,7 +33,6 @@ class Greedy:
         
         return stations
 
-
     def create_route(self, start_station: Station) -> Route:
         """
         Creates a single route starting from the given station.
@@ -51,44 +50,20 @@ class Greedy:
             # 1. Have not been used.
             # 2. Do not exceed the max time.
             # 3. Lead to stations not already visited in this route.
-            possible_connections = []
             for _, conn in station.connections.items():
                 if not conn.used and route.total_time + conn.distance <= self.max_time:
                     other_station = conn.get_other_station(current_station)
                     if other_station not in visited_stations:
-                        possible_connections.append(conn)
-
-            if not possible_connections:
-                # No valid connections available, end the route
+                        # Directly add the unused connection to the route
+                        if route.add_connection(conn):
+                            # If the connection is successfully added, update the current station
+                            current_station = other_station
+                            break  # Move on to the next connection after adding
+            else:
+                # If no valid connection is found, end the route
                 break
-
-            # Choose the best connection based on the number of unused connections at the destination
-            best_connection = None
-            max_unused_connections = -1
-
-            for conn in possible_connections:
-                other_station = conn.get_other_station(current_station)
-                
-                # Tel de onbenutte verbindingen met een for-loop en if-statement
-                unused_connections = 0
-                for c in self.network.stations[other_station].connections.values():
-                    if not c.used:
-                        unused_connections += 1
-                
-                # Als deze verbinding meer onbenutte verbindingen heeft, kies deze als de beste
-                if unused_connections > max_unused_connections:
-                    max_unused_connections = unused_connections
-                    best_connection = conn
-
-            # Add the best connection to the route
-            if not route.add_connection(best_connection):
-                break
-
-            # Update the current station
-            current_station = best_connection.get_other_station(current_station)
 
         return route
-
 
     def runGreedy(self):
         """
@@ -106,21 +81,10 @@ class Greedy:
         for start_station in sorted_stations:
             # Check if the station has available connections
             if start_station.name in used_stations:
-                # Station is al gebruikt
-                pass
-            else:
-                all_connections_used = True
-                for conn in start_station.connections.values():
-                    if not conn.used:  # Als er een verbinding is die niet gebruikt is
-                        all_connections_used = False
-                        break  # Stop de loop zodra we een niet-gebruikte verbinding vinden
-
-                if all_connections_used:
-                    # Alle verbindingen zijn gebruikt
-                    pass
+                continue  # Skip this station if it has already been used as a starting point
 
             print(f"Starting with station: {start_station.name} with {len(start_station.connections)} connections")
-            
+
             # Mark the station as used
             used_stations.add(start_station.name)
 
@@ -135,13 +99,9 @@ class Greedy:
             if len(self.network.routes) >= self.max_routes:
                 break
 
-            # Check if all connections are used
-            all_used = all(conn.used for conn in self.network.connections)
-            if all_used:
-                break
-
         # Calculate and return quality
         return self.network.calculate_quality()
+
 
 
 # Main function for testing
