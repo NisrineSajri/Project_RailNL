@@ -2,21 +2,15 @@
 # https://www.datacamp.com/tutorial/dijkstra-algorithm-in-python
 # https://stackoverflow.com/questions/69580769/redundant-checks-in-python-implementation-of-dijkstras-algorithm
 
-import random
-from typing import List, Tuple
 import os
 import sys
 from heapq import heapify, heappop, heappush
 import pandas as pd
-import folium
 
 # Add the parent directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-
-from classes.rail_network import RailNetwork
-from classes.route import Route
 
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
 stations = pd.read_csv('data/StationsHolland.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
@@ -94,6 +88,8 @@ class DijkstraAlgorithm:
     def __init__(self, graph):
         self.graph = graph
 
+
+
     def calculate_routes(self):
         """We berekenen de routes, deze functie returned de trajecten en de waarde van K"""
         # maximaal 7 trajecten van 120 minuten
@@ -123,12 +119,8 @@ class DijkstraAlgorithm:
             start_station = None
 
             # we kiezen hier een startstation
-            for _, row in connections.iterrows():
-                if row['station1'] not in start_stations and row['station1'] not in visited:
-                    
-                    start_station = row['station1']
-                    start_stations.add(start_station)
-                    break
+            start_station = find_start_station()
+
 
             if start_station is None:
                 break
@@ -191,6 +183,17 @@ class DijkstraAlgorithm:
         T = len(trajects)
         K = p * 1000 - (T * 100 - total_minutes)
         return trajects, K
+
+
+    def find_start_station(self):
+        for _, row in connections.iterrows():
+            if row['station1'] not in start_stations and row['station1'] not in visited:
+        
+                start_station = row['station1']
+                start_stations.add(start_station)
+                return(start_station)
+
+
 
 graph = Graph()
 graph.add_connections(connections)
