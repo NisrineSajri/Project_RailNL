@@ -2,6 +2,7 @@
 # https://www.datacamp.com/tutorial/dijkstra-algorithm-in-python
 # https://stackoverflow.com/questions/69580769/redundant-checks-in-python-implementation-of-dijkstras-algorithm
 
+import csv
 import os
 import sys
 from heapq import heapify, heappop, heappush
@@ -88,8 +89,6 @@ class DijkstraAlgorithm:
     def __init__(self, graph):
         self.graph = graph
 
-
-
     def calculate_routes(self):
         """We berekenen de routes, deze functie returned de trajecten en de waarde van K"""
         # maximaal 7 trajecten van 120 minuten
@@ -119,8 +118,12 @@ class DijkstraAlgorithm:
             start_station = None
 
             # we kiezen hier een startstation
-            start_station = find_start_station()
-
+            for _, row in connections.iterrows():
+                if row['station1'] not in start_stations and row['station1'] not in visited:
+                    
+                    start_station = row['station1']
+                    start_stations.add(start_station)
+                    break
 
             if start_station is None:
                 break
@@ -184,17 +187,6 @@ class DijkstraAlgorithm:
         K = p * 1000 - (T * 100 - total_minutes)
         return trajects, K
 
-
-    def find_start_station(self):
-        for _, row in connections.iterrows():
-            if row['station1'] not in start_stations and row['station1'] not in visited:
-        
-                start_station = row['station1']
-                start_stations.add(start_station)
-                return(start_station)
-
-
-
 graph = Graph()
 graph.add_connections(connections)
 algorithm = DijkstraAlgorithm(graph)
@@ -202,9 +194,12 @@ routes, K = algorithm.calculate_routes()
 
 
 # resultaten
+connections_visualization = {}
 for i, (traject, minutes) in enumerate(routes):
     print(f"Traject {i + 1} ({minutes} minuten):")
     for start, end, distance in traject:
         print(F"{start} -> {end} ({distance} minuten)")
+        connections_visualization[start] = end
 print(f"Kwaliteit K: {K}")
+#print(f"connections dict: {connections_visualization}")
 
