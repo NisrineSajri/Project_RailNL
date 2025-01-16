@@ -12,6 +12,9 @@ from classes.rail_network import RailNetwork
 from classes.solution_statistics import SolutionStatistics
 from algorithms.random_algorithm import RandomAlgorithm
 from algorithms.bfs_greedy import SimplifiedBFSAlgorithm
+from algorithms.bfs_greedy_v2 import SimplifiedBFSAlgorithm as SimplifiedBFSAlgorithmV2
+from algorithms.beam_search import BeamSearchAlgorithm
+from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
 from constants import STATIONS_FILE, CONNECTIONS_FILE
 
 
@@ -39,7 +42,7 @@ def run_algorithm(algorithm_class, network: RailNetwork, iterations: int = None)
 
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
-    parser.add_argument('--algorithm', type=str, choices=['random', 'bfs', 'all'], 
+    parser.add_argument('--algorithm', type=str, choices=['random', 'bfs', 'bfs_v2', 'beam', 'beam_v2', 'all'], 
                       default='all', help='Algorithm to run (default: all)')
     parser.add_argument('--iterations', type=int, default=1000,
                       help='Number of iterations for random algorithm (default: 1000)')
@@ -55,26 +58,27 @@ def main():
         # Define algorithm mapping
         algorithms = {
             'random': RandomAlgorithm,
-            'bfs': SimplifiedBFSAlgorithm
+            'bfs': SimplifiedBFSAlgorithm,
+            'bfs_v2': SimplifiedBFSAlgorithmV2,
+            'beam': BeamSearchAlgorithm,
+            'beam_v2': BeamSearchAlgorithmV2
         }
         
         if args.algorithm == 'all':
             # Run all algorithms
             for algo_name, algo_class in algorithms.items():
-                # Only pass iterations to random algorithm
                 if algo_name == 'random':
-                    iterations = args.iterations 
-                else: 
-                    None
+                    iterations = args.iterations
+                else:
+                    iterations = None
                 run_algorithm(algo_class, network, iterations)
         else:
             # Run specific algorithm
             algo_class = algorithms[args.algorithm]
-            # Only pass iterations to random algorithm
             if args.algorithm == 'random':
-                iterations = args.iterations 
-            else: 
-                None
+                iterations = args.iterations
+            else:
+                iterations = None
             run_algorithm(algo_class, network, iterations)
             
     except Exception as e:

@@ -1,18 +1,16 @@
-# bfs_greedy.py
 from collections import deque
-from typing import List, Tuple, Optional, Set
+from typing import List, Tuple, Optional
+
 from classes.rail_network import RailNetwork
 from classes.route import Route
-from classes.heuristics import RouteHeuristics
 
 class SimplifiedBFSAlgorithm:
     def __init__(self, rail_network: RailNetwork):
         self.rail_network = rail_network
-        self.heuristic = RouteHeuristics(rail_network)
         
     def find_route_bfs(self, start_station: str, time_limit: int = 120) -> Optional[Route]:
         """
-        Use BFS with heuristic guidance to find a good route from given station.
+        Use BFS to find a route starting from given station that maximizes unused connections.
         
         Args:
             start_station (str): Starting station name
@@ -21,46 +19,40 @@ class SimplifiedBFSAlgorithm:
         Returns:
             Optional[Route]: Best route found, or None if no valid route exists
         """
-        # Queue stores: (current_station, path_so_far, total_time, visited_stations, route)
-        queue = deque([(start_station, [start_station], 0, {start_station}, Route())])
-        best_score = float('-inf')
+        # Queue stores: (current_station, path_so_far, total_time, connections_used)
+        queue = deque([(start_station, [], 0, set())])
         best_route = None
+        best_unused_connections = 0
         
         while queue:
-            current_station, path, total_time, visited, current_route = queue.popleft()
+            current_station, path, total_time, connections_used = queue.popleft()
             
-            # Try to extend current route
-            connection, score = self.heuristic.get_best_connection(
-                current_station, total_time, visited
-            )
+            # Get all possible next connections from current station
+            station = self.rail_network.stations[current_station]
+            possible_connections = [
+                (dest, conn) for dest, conn in station.connections.items()
+                if total_time + conn.distance <= time_limit
+            ]
             
-            if connection:
-                next_station = connection.get_other_station(current_station)
+            # Try each possible next connection
+            for next_station, connection in possible_connections:
                 new_time = total_time + connection.distance
-                new_visited = visited | {next_station}
-                new_path = path + [next_station]
+                new_path = path + [current_station]
+                new_connections = connections_used | {connection}
                 
-                # Create new route with this connection
-                new_route = Route()
-                new_route.stations = new_path
-                new_route.total_time = new_time
-                new_route.connections_used = current_route.connections_used | {connection}
+                # Count how many unused connections this route would use
+                unused_connections = sum(1 for conn in new_connections if not conn.used)
                 
-                # Update best route if this scores better
-                route_score = len(new_route.connections_used) * 100 - new_time
-                if route_score > best_score:
-                    best_score = route_score
-                    best_route = new_route
+                # Update best route if this one uses more unused connections
+                if unused_connections > best_unused_connections:
+                    best_unused_connections = unused_connections
+                    best_route = Route()
+                    best_route.stations = new_path + [next_station]
+                    best_route.total_time = new_time
+                    best_route.connections_used = new_connections
                 
-                # Add to queue for further exploration if time permits
-                if new_time <= time_limit - 10:  # Leave some buffer
-                    queue.append((
-                        next_station,
-                        new_path,
-                        new_time,
-                        new_visited,
-                        new_route
-                    ))
+                # Add this state to queue for further exploration
+                queue.append((next_station, new_path, new_time, new_connections))
         
         return best_route
 
@@ -85,18 +77,14 @@ class SimplifiedBFSAlgorithm:
         while routes_created < max_routes:
             best_route = None
             best_station = None
-            best_score = float('-inf')
             
             # Try each possible starting station
             for start_station in all_stations:
                 route = self.find_route_bfs(start_station)
-                if route:
-                    # Score based on connections and time
-                    score = len(route.connections_used) * 100 - route.total_time
-                    if score > best_score:
-                        best_score = score
-                        best_route = route
-                        best_station = start_station
+                if route and (not best_route or 
+                            len(route.connections_used) > len(best_route.connections_used)):
+                    best_route = route
+                    best_station = start_station
             
             if not best_route:
                 break
