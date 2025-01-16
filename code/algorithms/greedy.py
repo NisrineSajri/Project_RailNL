@@ -25,7 +25,7 @@ class Greedy:
         self.network = network  # Bind the network to the Greedy class
         self.max_routes = config['max_routes']  # Use the max_routes from config
         self.max_time = config['time_limit']  # Use the time limit from config
-        self.halte_coordinates = {}  # Dictionary to store station coordinates
+        self.halte_coordinates = {}  # Dictionary to store station coordinates {Route 1 : {halte naam : (y, x), ..}}
 
         # Load the coordinates from the stations file
         self.load_coordinates(config['stations_file'])
