@@ -16,6 +16,8 @@ from algorithms.bfs_greedy import SimplifiedBFSAlgorithm
 from algorithms.bfs_greedy_v2 import SimplifiedBFSAlgorithm as SimplifiedBFSAlgorithmV2
 from algorithms.beam_search import BeamSearchAlgorithm
 from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
+from algorithms.dijkstra_algorithm import DijkstraAlgorithm
+from algorithms.dijkstra_algorithm import Graph
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 
