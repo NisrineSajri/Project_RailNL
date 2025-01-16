@@ -16,21 +16,28 @@ from algorithms.bfs_greedy import SimplifiedBFSAlgorithm
 from algorithms.bfs_greedy_v2 import SimplifiedBFSAlgorithm as SimplifiedBFSAlgorithmV2
 from algorithms.beam_search import BeamSearchAlgorithm
 from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
-from algorithms.dijkstra_algorithm import DijkstraAlgorithm
-from algorithms.dijkstra_algorithm import Graph
-from constants import STATIONS_FILE, CONNECTIONS_FILE
+from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 
-def run_algorithm(algorithm_class, network: RailNetwork, iterations: int = None) -> None:
+def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
     """
     Run the specified algorithm and print its results.
     
     Args:
         algorithm_class: Class of the algorithm to run
         network: RailNetwork instance
+        config: Configuration dictionary containing max_routes and time_limit
         iterations: Number of iterations (only used for RandomAlgorithm)
     """
     algorithm = algorithm_class(network)
+    
+    # Set the time limit for route creation based on the dataset configuration
+    if hasattr(algorithm, 'create_route'):
+        # Monkey patch the create_route method to use the correct time limit
+        original_create_route = algorithm.create_route
+        def create_route_wrapper(*args, **kwargs):
+            return original_create_route(*args, time_limit=config['time_limit'], **kwargs)
+        algorithm.create_route = create_route_wrapper
     
     # Only use iterations for RandomAlgorithm
     if isinstance(algorithm, RandomAlgorithm):
@@ -65,14 +72,19 @@ def main():
                       default='all', help='Algorithm to run (default: all)')
     parser.add_argument('--iterations', type=int, default=1000,
                       help='Number of iterations for random algorithm (default: 1000)')
+    parser.add_argument('--dataset', type=str, choices=['holland', 'national'],
+                      default='holland', help='Dataset to use (default: holland)')
     
     args = parser.parse_args()
     
     try:
+        # Select configuration based on dataset
+        config = HOLLAND_CONFIG if args.dataset == 'holland' else NATIONAL_CONFIG
+        
         # Initialize network
         network = RailNetwork()
-        network.load_stations(STATIONS_FILE)
-        network.load_connections(CONNECTIONS_FILE)
+        network.load_stations(config['stations_file'])
+        network.load_connections(config['connections_file'])
         
         # Define algorithm mapping
         algorithms = {
@@ -91,7 +103,7 @@ def main():
                     iterations = args.iterations
                 else:
                     iterations = None
-                run_algorithm(algo_class, network, iterations)
+                run_algorithm(algo_class, network, config, iterations)
         else:
             # Run specific algorithm
             algo_class = algorithms[args.algorithm]
@@ -99,13 +111,12 @@ def main():
                 iterations = args.iterations
             else:
                 iterations = None
-            run_algorithm(algo_class, network, iterations)
+            run_algorithm(algo_class, network, config, iterations)
             
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         print(f"Current working directory: {os.getcwd()}")
-        print(f"Stations file path: {STATIONS_FILE}")
-        print(f"Connections file path: {CONNECTIONS_FILE}")
+        print(f"Config being used: {config}")
         
 if __name__ == "__main__":
     main()

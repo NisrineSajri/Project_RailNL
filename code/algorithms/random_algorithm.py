@@ -8,7 +8,7 @@ class RandomAlgorithm:
     def __init__(self, rail_network: RailNetwork):
         self.rail_network = rail_network
         
-    def create_route(self, start_station: str, time_limit: int = 120) -> Route:
+    def create_route(self, start_station: str, time_limit: int = 180) -> Route:
         """
         Create a single route starting from the given station.
         
@@ -42,7 +42,7 @@ class RandomAlgorithm:
             
         return route
 
-    def create_solution(self, max_routes: int = 7) -> float:
+    def create_solution(self, max_routes: int = 20) -> float:
         """
         Create a complete solution with multiple routes.
         

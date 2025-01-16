@@ -33,7 +33,6 @@ class Greedy:
         
         return stations
 
-
     def create_route(self, start_station: Station) -> Route:
         """
         Creates a single route starting from the given station.
@@ -65,7 +64,6 @@ class Greedy:
                 break
 
         return route
-
 
     def runGreedy(self):
         """
@@ -103,6 +101,7 @@ class Greedy:
 
         # Calculate and return quality
         return self.network.calculate_quality()
+
 
 
 # Main function for testing
