@@ -1,34 +1,25 @@
+# greedy.py
 import os
 import sys
 import csv
-
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
-# Now you can import from the classes module
+from typing import List, Tuple
 from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.station import Station
-from constants import HOLLAND_CONFIG, NATIONAL_CONFIG  # nu alleen even holland data
 
-class Greedy:
-    def __init__(self, network: RailNetwork, config: dict):
+class GreedyAlgorithm:
+    def __init__(self, network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialize the Greedy class with the network and configuration.
-
+        Initialize the Greedy class.
         Args:
-            network (RailNetwork): The rail network object.
-            config (dict): Configuration dictionary with paths and settings.
+            network: The rail network to work with
+            time_limit: Maximum time limit for routes in minutes
+            max_routes: Maximum number of routes allowed
         """
         self.network = network  # Bind the network to the Greedy class
-        self.max_routes = config['max_routes']  # Use the max_routes from config
-        self.max_time = config['time_limit']  # Use the time limit from config
+        self.max_routes = max_routes  # Use the max_routes from config
+        self.max_time = time_limit  # Use the time limit from config
         self.halte_coordinates = {}  # Dictionary to store station coordinates {Route 1 : {halte naam : (y, x), ..}}
-
-        # Load the coordinates from the stations file
-        self.load_coordinates(config['stations_file'])
 
     def load_coordinates(self, filepath: str):
         """
@@ -115,7 +106,6 @@ class Greedy:
 
         return route_coordinates
 
-
     def runGreedy(self):
         """
         Run the greedy algorithm to create routes using a sorted list of stations.
@@ -137,8 +127,6 @@ class Greedy:
             if start_station.name in used_stations:
                 continue  # Skip this station if it has already been used as a starting point
 
-            print(f"Starting with station: {start_station.name} with {len(start_station.connections)} connections")
-
             # Mark the station as used
             used_stations.add(start_station.name)
 
@@ -157,41 +145,24 @@ class Greedy:
             if len(self.network.routes) >= self.max_routes:
                 break
 
-        # Print the saved coordinates 
-        print("\nSaved route coordinates:")
-        for route_name, coordinates in all_routes_coordinates.items():
-            print(f"{route_name}: {coordinates}")
-
         # Calculate and return quality
         return self.network.calculate_quality()
 
-
-
-# Main function for testing
-if __name__ == "__main__":
-    # Initialize the RailNetwork
-    network = RailNetwork()
-
-    # Load stations and connections using the HOLLAND_CONFIG paths
-    network.load_stations(HOLLAND_CONFIG['stations_file'])
-    network.load_connections(HOLLAND_CONFIG['connections_file'])
-
-    # Print initial network details
-    print(f"Loaded {len(network.stations)} stations and {len(network.connections)} connections.")
-
-    # Run the Greedy algorithm using the HOLLAND_CONFIG
-    greedy = Greedy(network, HOLLAND_CONFIG)
-    quality = greedy.runGreedy()
-
-    # Print routes
-    print("\nRoutes created:")
-
-    route_number = 1
-    for route in network.routes:
-        # Print current route number and route
-        print("Route " + str(route_number) + ": " + str(route))
-        route_number = route_number + 1
-
-    # Print quality
-    print("")
-    print("Network quality: " + str(quality))
+    def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
+        """
+        Find best solution (single iteration since deterministic).
+        
+        Args:
+            iterations: Kept for API compatibility
+            
+        Returns:
+            Tuple[float, List[Route]]: Quality score and corresponding routes
+        """
+        quality = self.runGreedy()
+        best_routes = [Route() for _ in self.network.routes]
+        for new_route, old_route in zip(best_routes, self.network.routes):
+            new_route.stations = old_route.stations.copy()
+            new_route.total_time = old_route.total_time
+            new_route.connections_used = old_route.connections_used.copy()
+        
+        return quality, best_routes

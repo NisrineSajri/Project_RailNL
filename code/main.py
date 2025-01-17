@@ -1,4 +1,3 @@
-# main.py
 import argparse
 from typing import List, Type
 import os
@@ -16,9 +15,8 @@ from algorithms.bfs_greedy_v2 import SimplifiedBFSAlgorithm as SimplifiedBFSAlgo
 from algorithms.beam_search import BeamSearchAlgorithm
 from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
 from algorithms.dijkstra_algorithm import DijkstraAlgorithm
-from algorithms.dijkstra_algorithm import Graph
+from algorithms.greedy import GreedyAlgorithm
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
-
 
 def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
     """
@@ -31,12 +29,11 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
         iterations: Number of iterations (only used for RandomAlgorithm)
     """
     # Initialize algorithm with dataset-specific parameters
-    if algorithm_class.__name__ in ['BeamSearchAlgorithm', 'BeamSearchAlgorithmV2', 'RandomAlgorithm', 'SimplifiedBFSAlgorithm']:
-        algorithm = algorithm_class(
-            network, 
-            time_limit=config['time_limit'], 
-            max_routes=config['max_routes']
-        )
+    algorithm = algorithm_class(
+        network, 
+        time_limit=config['time_limit'], 
+        max_routes=config['max_routes']
+    )
     
     # Only use iterations for RandomAlgorithm
     if isinstance(algorithm, RandomAlgorithm):
@@ -47,11 +44,11 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
     stats = SolutionStatistics(best_quality, best_routes)
     print(f"\nResults for {algorithm_class.__name__}:")
     stats.print_stats()
-    
 
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
-    parser.add_argument('--algorithm', type=str, choices=['random', 'bfs', 'bfs_v2', 'beam', 'beam_v2', 'dijkstra','all'], 
+    parser.add_argument('--algorithm', type=str, 
+                      choices=['random', 'bfs', 'bfs_v2', 'beam', 'beam_v2', 'dijkstra', 'greedy', 'all'], 
                       default='all', help='Algorithm to run (default: all)')
     parser.add_argument('--iterations', type=int, default=1000,
                       help='Number of iterations for random algorithm (default: 1000)')
@@ -76,7 +73,8 @@ def main():
             'bfs_v2': SimplifiedBFSAlgorithmV2,
             'beam': BeamSearchAlgorithm,
             'beam_v2': BeamSearchAlgorithmV2,
-            'dijkstra': DijkstraAlgorithm
+            'dijkstra': DijkstraAlgorithm,
+            'greedy': GreedyAlgorithm
         }
         
         if args.algorithm == 'all':

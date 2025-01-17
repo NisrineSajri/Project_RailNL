@@ -1,26 +1,11 @@
-# Bronen: 
-# https://www.datacamp.com/tutorial/dijkstra-algorithm-in-python
-# https://stackoverflow.com/questions/69580769/redundant-checks-in-python-implementation-of-dijkstras-algorithm
-
+# dijkstra_algorithm.py
 import csv
 import os
 import sys
 from heapq import heapify, heappop, heappush
-import pandas as pd
-
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
+from typing import List, Tuple
 from classes.rail_network import RailNetwork
 from classes.route import Route
-
-from constants import HOLLAND_CONFIG
-
-# We halen hier de data op van de coördinaten en de verbindingen van de stations
-stations = pd.read_csv(HOLLAND_CONFIG['stations_file'], header=None, names=['station', 'y', 'x'], skiprows=1)
-connections = pd.read_csv(HOLLAND_CONFIG['connections_file'], header=None, names=['station1', 'station2', 'distance'], skiprows=1)
 
 class Graph:
     def __init__(self, graph: dict = {}):
@@ -28,23 +13,18 @@ class Graph:
 
     def add_edge(self, node1, node2, weight):
         """Voegt een edge toe tussen twee nodes (beide kanten op) met een weight"""
-
-        # als node1 nog niet bestaat, creëren we deze
         if node1 not in self.graph:
             self.graph[node1] = {}
-        # we creëren een verbinding tussen node1 en node2 met een weight
         self.graph[node1][node2] = weight
 
-        # als node2 nog niet bestaat, creëren we deze
         if node2 not in self.graph:
            self.graph[node2] = {}
-        # we creëren een verbinding tussen node2 en node1 met een weight
         self.graph[node2][node1] = weight
 
-    def add_connections(self,connections):
+    def add_connections(self, connections):
         """We creëren een graaf met voor elke verbinding een edge"""
-        for _, row in connections.iterrows():
-            self.add_edge(row['station1'], row['station2'], row['distance'])
+        for conn in connections:
+            self.add_edge(conn.station1, conn.station2, conn.distance)
 
     def shortest_distances(self, source):
         """We zoeken naar de kortste afstand van de source naar andere nodes
@@ -86,23 +66,29 @@ class Graph:
                     heappush(pq, (distance, neighbor))
 
         # we returnen de dictionary met de distances erin
-        #print(source)
-        #print(distances)
         return distances
 
 class DijkstraAlgorithm:
-    def __init__(self, graph, max_minutes = 120, max_trajects = 7):
-        self.graph = graph
-        self.max_minutes = max_minutes
-        self.max_trajects = max_trajects
-        self.railnetwork = RailNetwork()
+    def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
+        """
+        Initialize DijkstraAlgorithm.
+        Args:
+            rail_network: The rail network to work with
+            time_limit: Maximum time limit for routes in minutes
+            max_routes: Maximum number of routes allowed
+        """
+        self.rail_network = rail_network
+        self.time_limit = time_limit
+        self.max_routes = max_routes
+        self.graph = Graph()
+        self.graph.add_connections(self.rail_network.connections)
     
     def calculate_start_station(self, start_stations, visited):
         """We zoeken een startstation dat nog niet bezocht is"""
-        for _, row in connections.iterrows():
-            if row['station1'] not in start_stations and row['station1'] not in visited:
-                start_stations.add(row['station1'])
-                return(row['station1'])
+        for conn in self.rail_network.connections:
+            if conn.station1 not in start_stations and conn.station1 not in visited:
+                start_stations.add(conn.station1)
+                return(conn.station1)
             
     def find_next_station(self, start_station, visited, visited_connections):
         """We zoeken het volgende station (met de kortste afstand)"""
@@ -111,7 +97,6 @@ class DijkstraAlgorithm:
         next_station = None
 
         # we zetten shortest_distance gelijk aan oneindig
-
         shortest_distance = float("inf")
 
         # we gaan alle andere stations af
@@ -135,16 +120,22 @@ class DijkstraAlgorithm:
         current_minutes = 0
 
         # we maken een set aan om de bezochte plekken in op te slaan
-
         visited = set()
 
         start_station = self.calculate_start_station(start_stations, visited)
 
-        while current_minutes < self.max_minutes:
+        # Keep track of number of stations in this route
+        num_stations = 1  # Start with 1 for the start station
+        max_stations = 7  # Maximum stations per route
+
+        while current_minutes < self.time_limit and num_stations < max_stations:
             next_station, shortest_distance = self.find_next_station(start_station, visited, visited_connections)
 
-            if next_station is None or current_minutes + shortest_distance > self.max_minutes:
+            if next_station is None or current_minutes + shortest_distance > self.time_limit:
                 break
+                
+            # Increment station count
+            num_stations += 1
 
             # we voegen dit station toe aan de visited set
             visited.add(next_station)
@@ -163,20 +154,19 @@ class DijkstraAlgorithm:
 
         return current_traject, current_minutes, visited_connections
 
-
     def k_value(self, trajects, visited_connections):
         """We berekenen de K"""
-        total_connections = len(connections)
+        total_connections = len(self.rail_network.connections)
         p = len(visited_connections) / total_connections
         T = len(trajects)
         total_minutes = sum(minutes for _, minutes in trajects)
-        K = p * 1000 - (T * 100 - total_minutes)
+        K = p * 10000 - (T * 100 + total_minutes)
         return K
 
-  
-    def find_best_solution(self):
-        """We berekenen de routes, deze functie returned de trajecten en de waarde van K"""
-        
+    def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
+        """
+        Find best solution (single iteration since deterministic).
+        """
         # hier slaan we de trajecten op
         trajects = []
 
@@ -186,28 +176,35 @@ class DijkstraAlgorithm:
         # we maken een lege set om de stations in op te slaan die al als startstation gebruikt zijn
         start_stations = set()
 
-        # zolang we 120 minuten niet overschreiden
-        while len(trajects) < self.max_trajects:
-
+        # zolang we max_routes niet overschreiden
+        while len(trajects) < self.max_routes:
             current_traject, current_minutes, new_connections = self.traject(start_stations, visited_connections)
-            trajects.append((current_traject, current_minutes))
-        
+            # Only add non-empty routes
+            if current_traject:  # If route contains connections
+                trajects.append((current_traject, current_minutes))
+                visited_connections = new_connections
+            else:
+                break  # If we get an empty route, stop creating new routes
+
         K = self.k_value(trajects, visited_connections)
-        return K, trajects
-
-if __name__ == "__main__":
-    graph = Graph()
-    graph.add_connections(connections)
-    algorithm = DijkstraAlgorithm(graph)
-    K, routes = algorithm.find_best_solution()
-
-
-    # resultaten
-    connections_visualization = {}
-    for i, (traject, minutes) in enumerate(routes):
-        print(f"Traject {i + 1} ({minutes} minuten):")
-        for start, end, distance in traject:
-            print(F"{start} -> {end} ({distance} minuten)")
-            connections_visualization[start] = end
-    print(f"Kwaliteit K: {K}")
-    #print(f"connections dict: {connections_visualization}")
+        
+        # Convert trajects to Route objects
+        best_routes = []
+        for traject_data in trajects:
+            route = Route()
+            current_time = 0
+            for start, end, distance in traject_data[0]:
+                # Find the actual Connection object and add it to the route
+                for conn in self.rail_network.connections:
+                    if {conn.station1, conn.station2} == {start, end}:
+                        route.connections_used.add(conn)
+                        conn.used = True
+                        if not route.stations:
+                            route.stations.append(start)
+                        route.stations.append(end)
+                        current_time += conn.distance
+                        break
+            route.total_time = current_time
+            best_routes.append(route)
+        
+        return K, best_routes
