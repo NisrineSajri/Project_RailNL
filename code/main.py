@@ -44,6 +44,7 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
     stats = SolutionStatistics(best_quality, best_routes)
     print(f"\nResults for {algorithm_class.__name__}:")
     stats.print_stats()
+    
 
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
