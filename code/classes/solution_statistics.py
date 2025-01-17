@@ -1,4 +1,13 @@
 from typing import List
+import csv
+import os
+import sys
+
+# Add the parent directory to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from classes.route import Route
 
 class SolutionStatistics:
@@ -26,6 +35,14 @@ class SolutionStatistics:
         print(f"Number of routes (T): {len(self.routes)}")
         print(f"Total time (Min): {self.total_time} minutes")
         print(f"Total connections used: {self.total_connections}")
+
+        # Opslaan van de routes in een CSV-bestand
+        with open('routes.csv', mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            for route in self.routes:
+                writer.writerow(route.stations)
+
+        print(f"Routes have been saved to 'routes.csv'.")
         
         print("\nDetailed Routes:")
         for i, route in enumerate(self.routes, 1):
