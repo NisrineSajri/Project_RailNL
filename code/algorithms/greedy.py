@@ -1,7 +1,4 @@
 # greedy.py
-import os
-import sys
-import csv
 from typing import List, Tuple
 from classes.rail_network import RailNetwork
 from classes.route import Route
@@ -19,25 +16,6 @@ class GreedyAlgorithm:
         self.network = network  # Bind the network to the Greedy class
         self.max_routes = max_routes  # Use the max_routes from config
         self.max_time = time_limit  # Use the time limit from config
-        self.halte_coordinates = {}  # Dictionary to store station coordinates {Route 1 : {halte naam : (y, x), ..}}
-
-    def load_coordinates(self, filepath: str):
-        """
-        Load station coordinates from the CSV file into the halte_coordinates dictionary.
-        """
-        try:
-            with open(filepath, mode="r", newline='', encoding="utf-8") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    station = row["station"].strip()
-                    y = float(row["y"])
-                    x = float(row["x"])
-                    self.halte_coordinates[station] = (y, x)
-            print(f"Loaded coordinates for {len(self.halte_coordinates)} stations.")
-        except FileNotFoundError:
-            print(f"Error: The file {filepath} was not found.")
-        except Exception as e:
-            print(f"Error loading coordinates: {e}")
 
     def get_most_connections(self) -> list[Station]:
         """
@@ -86,25 +64,6 @@ class GreedyAlgorithm:
 
         return route
 
-    def save_route_coordinates(self, route: Route):
-        """
-        Save the coordinates of the stations in a route to a dictionary.
-
-        Args:
-            route (Route): The route object containing the stations.
-
-        Returns:
-            dict: A dictionary where keys are station names and values are (y, x) coordinates.
-        """
-        route_coordinates = {}
-
-        for station in route.stations:  # Use the 'stations' attribute from Route
-            if station in self.halte_coordinates:
-                route_coordinates[station] = self.halte_coordinates[station]
-            else:
-                print(f"Warning: Coordinates for station '{station}' not found.") #debugg check voor mij
-
-        return route_coordinates
 
     def runGreedy(self):
         """
@@ -118,9 +77,6 @@ class GreedyAlgorithm:
         # Get the sorted list of stations by number of connections
         sorted_stations = self.get_most_connections()
         used_stations = set()  # Track stations already used as starting points 
-
-        # Dictionary to store all routes and their respective coordinates
-        all_routes_coordinates = {}
 
         for start_station in sorted_stations:
             # Check if the station has available connections
@@ -136,10 +92,6 @@ class GreedyAlgorithm:
             # Add the route to the network if it contains connections
             if route.connections_used:
                 self.network.routes.append(route)
-
-                # Save the route coordinates to the dictionary
-                route_coordinates = self.save_route_coordinates(route)
-                all_routes_coordinates[f"Route {len(self.network.routes)}"] = route_coordinates
 
             # Check if the maximum number of routes has been reached
             if len(self.network.routes) >= self.max_routes:
