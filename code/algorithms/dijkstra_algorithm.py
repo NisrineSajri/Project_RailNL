@@ -13,6 +13,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+from classes.rail_network import RailNetwork
+from classes.route import Route
+
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
 stations = pd.read_csv('data/StationsHolland.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
 connections = pd.read_csv('data/ConnectiesHolland.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
@@ -86,10 +89,11 @@ class Graph:
         return distances
 
 class DijkstraAlgorithm:
-    def __init__(self, graph):
+    def __init__(self, graph, max_minutes = 120, max_trajects = 7):
         self.graph = graph
-        self.max_minutes = 120
-        self.max_trajects = 7
+        self.max_minutes = max_minutes
+        self.max_trajects = max_trajects
+        self.railnetwork = RailNetwork()
     
     def calculate_start_station(self, start_stations, visited):
         """We zoeken een startstation dat nog niet bezocht is"""
@@ -164,7 +168,8 @@ class DijkstraAlgorithm:
         total_minutes = sum(minutes for _, minutes in trajects)
         K = p * 1000 - (T * 100 - total_minutes)
         return K
-    
+
+  
     def find_best_solution(self):
         """We berekenen de routes, deze functie returned de trajecten en de waarde van K"""
         
@@ -190,7 +195,7 @@ if __name__ == "__main__":
     graph = Graph()
     graph.add_connections(connections)
     algorithm = DijkstraAlgorithm(graph)
-    K, routes = algorithm.calculate_routes()
+    K, routes = algorithm.find_best_solution()
 
 
 # resultaten
