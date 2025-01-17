@@ -1,20 +1,22 @@
-# beam_search.py
 from typing import List, Tuple, Optional, Set
 from classes.rail_network import RailNetwork
 from classes.route import Route
 import heapq
 
 class BeamSearchAlgorithm:
-    def __init__(self, rail_network: RailNetwork, beam_width: int = 5):
+    def __init__(self, rail_network: RailNetwork, beam_width: int = 7, time_limit: int = 120, max_routes: int = 7):
         """
         Initialize BeamSearchAlgorithm.
         
         Args:
             rail_network: The rail network to work with
             beam_width: Number of best partial solutions to keep at each step
+            time_limit: Maximum time limit for routes in minutes
         """
         self.rail_network = rail_network
         self.beam_width = beam_width
+        self.time_limit = time_limit
+        self.max_routes = max_routes
         
     def score_partial_route(self, route: Route) -> float:
         """
@@ -26,22 +28,19 @@ class BeamSearchAlgorithm:
         Returns:
             float: Score for the route
         """
-        return len(route.connections_used) - (route.total_time / 120)
+        return len(route.connections_used) - (route.total_time / self.time_limit)
         
-    def find_route_beam(self, start_station: str, time_limit: int = 120) -> Optional[Route]:
+    def find_route_beam(self, start_station: str) -> Optional[Route]:
         """
         Use beam search to find a route starting from given station.
         
         Args:
             start_station: Starting station name
-            time_limit: Maximum route time in minutes
             
         Returns:
             Optional[Route]: Best route found, or None if no valid route exists
         """
         # Initialize beam with starting state
-        # Each state is (score, station, path, total_time, visited_stations, route)
-        # Negative score because heapq is min-heap
         initial_route = Route()
         initial_route.stations = [start_station]
         beam = [(0, start_station, [start_station], 0, {start_station}, initial_route)]
@@ -61,7 +60,7 @@ class BeamSearchAlgorithm:
                         continue
                         
                     new_time = total_time + connection.distance
-                    if new_time > time_limit:
+                    if new_time > self.time_limit:
                         continue
                     
                     # Create new route with this connection
@@ -94,7 +93,9 @@ class BeamSearchAlgorithm:
             
         return best_route
 
-    def create_solution(self, max_routes: int = 7) -> float:
+    def create_solution(self, max_routes: int = None) -> float:
+        # Use instance default if not specified
+        max_routes = max_routes or self.max_routes
         """
         Create a complete solution with multiple routes.
         

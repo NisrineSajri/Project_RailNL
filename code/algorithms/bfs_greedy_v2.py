@@ -1,20 +1,28 @@
 from collections import deque
 from typing import List, Tuple, Optional
-
 from classes.rail_network import RailNetwork
 from classes.route import Route
 
 class SimplifiedBFSAlgorithm:
-    def __init__(self, rail_network: RailNetwork):
-        self.rail_network = rail_network
+    def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
+        """
+        Initialize SimplifiedBFSAlgorithm.
         
-    def find_route_bfs(self, start_station: str, time_limit: int = 120) -> Optional[Route]:
+        Args:
+            rail_network: The rail network to work with
+            time_limit: Maximum time limit for routes in minutes
+            max_routes: Maximum number of routes allowed
+        """
+        self.rail_network = rail_network
+        self.time_limit = time_limit
+        self.max_routes = max_routes
+        
+    def find_route_bfs(self, start_station: str) -> Optional[Route]:
         """
         Use BFS to find a route starting from given station that maximizes unused connections.
         
         Args:
-            start_station (str): Starting station name
-            time_limit (int): Maximum route time in minutes (default 120)
+            start_station: Starting station name
             
         Returns:
             Optional[Route]: Best route found, or None if no valid route exists
@@ -31,7 +39,7 @@ class SimplifiedBFSAlgorithm:
             station = self.rail_network.stations[current_station]
             possible_connections = [
                 (dest, conn) for dest, conn in station.connections.items()
-                if total_time + conn.distance <= time_limit
+                if total_time + conn.distance <= self.time_limit
             ]
             
             # Try each possible next connection
@@ -56,16 +64,19 @@ class SimplifiedBFSAlgorithm:
         
         return best_route
 
-    def create_solution(self, max_routes: int = 7) -> float:
+    def create_solution(self, max_routes: int = None) -> float:
         """
         Create a complete solution with multiple routes.
         
         Args:
-            max_routes (int): Maximum number of routes allowed
+            max_routes: Maximum number of routes allowed
             
         Returns:
             float: Quality score of the solution
         """
+        # Use instance default if not specified
+        max_routes = max_routes or self.max_routes
+        
         # Reset all connections
         for conn in self.rail_network.connections:
             conn.used = False
@@ -106,7 +117,7 @@ class SimplifiedBFSAlgorithm:
         Find the best solution. Single iteration since deterministic.
         
         Args:
-            iterations (int): Kept for API compatibility
+            iterations: Kept for API compatibility
             
         Returns:
             Tuple[float, List[Route]]: Quality score and routes

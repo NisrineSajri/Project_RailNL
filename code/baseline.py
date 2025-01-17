@@ -28,13 +28,11 @@ def analyze_random_solutions(config: dict, iterations: int = 1000, seed: int = 4
     network.load_stations(config['stations_file'])
     network.load_connections(config['connections_file'])
     
-    algorithm = RandomAlgorithm(network)
-    
-    # Monkey patch create_route to use correct time limit
-    original_create_route = algorithm.create_route
-    def create_route_wrapper(*args, **kwargs):
-        return original_create_route(*args, time_limit=config['time_limit'], **kwargs)
-    algorithm.create_route = create_route_wrapper
+    algorithm = RandomAlgorithm(
+        network,
+        time_limit=config['time_limit'],
+        max_routes=config['max_routes']
+    )
     
     # Collect scores
     scores = []

@@ -1,11 +1,18 @@
-# heuristics.py
 from typing import Dict
 from classes.rail_network import RailNetwork
 from classes.connection import Connection
 
 class RouteHeuristics:
-    def __init__(self, rail_network: RailNetwork):
+    def __init__(self, rail_network: RailNetwork, time_limit: int = 120):
+        """
+        Initialize RouteHeuristics with configurable time limit.
+        
+        Args:
+            rail_network: The rail network to work with
+            time_limit: Maximum time limit for routes in minutes
+        """
         self.rail_network = rail_network
+        self.time_limit = time_limit
         
     def calculate_connection_value(self, connection: Connection, current_station: str, 
                                  current_route_time: int) -> float:
@@ -34,11 +41,12 @@ class RouteHeuristics:
         
         # Heavily penalize routes that would force us to create a new route
         time_penalty = 0
-        if current_route_time + connection.distance > 110:  # Leave buffer from 120 limit
+        buffer_time = self.time_limit - 10  # Leave 10-minute buffer from limit
+        if current_route_time + connection.distance > buffer_time:
             time_penalty = 100  # Equal to cost of new route in scoring function
             
         # Score = nearby_unused - (normalized_time_cost) - new_route_penalty
-        return nearby_unused - (connection.distance / 180) - time_penalty
+        return nearby_unused - (connection.distance / self.time_limit) - time_penalty
     
     def get_best_connection(self, current_station: str, current_route_time: int, 
                           visited_stations: set = None) -> tuple[Connection, float]:
@@ -64,7 +72,7 @@ class RouteHeuristics:
                 continue
                 
             # Skip if adding this would exceed time limit
-            if current_route_time + connection.distance > 180:
+            if current_route_time + connection.distance > self.time_limit:
                 continue
                 
             score = self.calculate_connection_value(
