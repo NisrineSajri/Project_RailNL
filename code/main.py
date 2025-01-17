@@ -44,7 +44,23 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
     stats = SolutionStatistics(best_quality, best_routes)
     print(f"\nResults for {algorithm_class.__name__}:")
     stats.print_stats()
-    
+
+# Bron: https://www.tutorialspoint.com/how-to-save-a-python-dictionary-to-csv-file
+def run_visualization(self):
+    # Specify the CSV file name
+    csv_file = 'visualization_algorithms.csv'
+
+    # Writing to CSV file
+    with open(csv_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Key', 'Value'])
+        
+        # Write data
+        for key, value in my_dict.items():
+            writer.writerow([key, value])
+
+    print(f"Dictionary saved to {csv_file}")
+        
 
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
