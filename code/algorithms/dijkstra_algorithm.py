@@ -13,16 +13,12 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-<<<<<<< HEAD
 from classes.rail_network import RailNetwork
 from classes.route import Route
-=======
-from constants import HOLLAND_CONFIG
->>>>>>> 728c46670ad81a4541382dcdf7e4f20c4c027fda
 
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
-stations = pd.read_csv(HOLLAND_CONFIG['stations_file'], header=None, names=['station', 'y', 'x'], skiprows=1)
-connections = pd.read_csv(HOLLAND_CONFIG['connections_file'], header=None, names=['station1', 'station2', 'distance'], skiprows=1)
+stations = pd.read_csv('data/StationsHolland.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
+connections = pd.read_csv('data/ConnectiesHolland.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
 
 class Graph:
     def __init__(self, graph: dict = {}):
@@ -113,7 +109,6 @@ class DijkstraAlgorithm:
         next_station = None
 
         # we zetten shortest_distance gelijk aan oneindig
-
         shortest_distance = float("inf")
 
         # we gaan alle andere stations af
@@ -137,7 +132,6 @@ class DijkstraAlgorithm:
         current_minutes = 0
 
         # we maken een set aan om de bezochte plekken in op te slaan
-
         visited = set()
 
         start_station = self.calculate_start_station(start_stations, visited)
@@ -204,13 +198,13 @@ if __name__ == "__main__":
     K, routes = algorithm.find_best_solution()
 
 
-    # resultaten
-    connections_visualization = {}
-    for i, (traject, minutes) in enumerate(routes):
-        print(f"Traject {i + 1} ({minutes} minuten):")
-        for start, end, distance in traject:
-            print(F"{start} -> {end} ({distance} minuten)")
-            connections_visualization[start] = end
-    print(f"Kwaliteit K: {K}")
-    #print(f"connections dict: {connections_visualization}")
+# resultaten
+connections_visualization = {}
+for i, (traject, minutes) in enumerate(routes):
+    print(f"Traject {i + 1} ({minutes} minuten):")
+    for start, end, distance in traject:
+        print(F"{start} -> {end} ({distance} minuten)")
+        connections_visualization[start] = end
+print(f"Kwaliteit K: {K}")
+#print(f"connections dict: {connections_visualization}")
 
