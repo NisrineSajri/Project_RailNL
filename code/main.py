@@ -3,7 +3,6 @@ import argparse
 from typing import List, Type
 import os
 import sys
-import csv
 
 # Add the parent directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,15 +30,13 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
         config: Configuration dictionary containing max_routes and time_limit
         iterations: Number of iterations (only used for RandomAlgorithm)
     """
-    algorithm = algorithm_class(network)
-    
-    # Set the time limit for route creation based on the dataset configuration
-    if hasattr(algorithm, 'create_route'):
-        # Monkey patch the create_route method to use the correct time limit
-        original_create_route = algorithm.create_route
-        def create_route_wrapper(*args, **kwargs):
-            return original_create_route(*args, time_limit=config['time_limit'], **kwargs)
-        algorithm.create_route = create_route_wrapper
+    # Initialize algorithm with dataset-specific parameters
+    if algorithm_class.__name__ in ['BeamSearchAlgorithm', 'BeamSearchAlgorithmV2', 'RandomAlgorithm', 'SimplifiedBFSAlgorithm']:
+        algorithm = algorithm_class(
+            network, 
+            time_limit=config['time_limit'], 
+            max_routes=config['max_routes']
+        )
     
     # Only use iterations for RandomAlgorithm
     if isinstance(algorithm, RandomAlgorithm):
@@ -50,23 +47,7 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
     stats = SolutionStatistics(best_quality, best_routes)
     print(f"\nResults for {algorithm_class.__name__}:")
     stats.print_stats()
-
-# Bron: https://www.tutorialspoint.com/how-to-save-a-python-dictionary-to-csv-file
-def run_visualization():
-    connections_visualization = run_algorithm()
-    # Specify the CSV file name
-    csv_file = 'connections_visualization.csv'
-
-    # Writing to CSV file
-    with open(csv_file, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Key', 'Value'])
-        
-        # Write data
-        for key, value in connections_visualization.items():
-            writer.writerow([key, value])
-
-    print(f"Dictionary saved to {csv_file}")
+    
 
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')

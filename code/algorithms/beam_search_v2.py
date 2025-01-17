@@ -1,4 +1,3 @@
-# beam_search_v2.py
 from typing import List, Tuple, Optional, Set
 from classes.rail_network import RailNetwork
 from classes.route import Route
@@ -6,25 +5,27 @@ from classes.heuristics import RouteHeuristics
 import heapq
 
 class BeamSearchAlgorithmV2:
-    def __init__(self, rail_network: RailNetwork, beam_width: int = 5):
+    def __init__(self, rail_network: RailNetwork, beam_width: int = 7, time_limit: int = 120, max_routes: int = 7):
         """
         Initialize BeamSearchAlgorithm with improved heuristics.
         
         Args:
             rail_network: The rail network to work with
             beam_width: Number of best partial solutions to keep at each step
+            time_limit: Maximum time limit for routes in minutes
         """
         self.rail_network = rail_network
         self.beam_width = beam_width
-        self.heuristic = RouteHeuristics(rail_network)
+        self.time_limit = time_limit
+        self.heuristic = RouteHeuristics(rail_network, time_limit=time_limit)
+        self.max_routes = max_routes
         
-    def find_route_beam(self, start_station: str, time_limit: int = 120) -> Optional[Route]:
+    def find_route_beam(self, start_station: str) -> Optional[Route]:
         """
         Use beam search with improved heuristics to find a route.
         
         Args:
             start_station: Starting station name
-            time_limit: Maximum route time in minutes
             
         Returns:
             Optional[Route]: Best route found, or None if no valid route exists
@@ -48,7 +49,7 @@ class BeamSearchAlgorithmV2:
                         continue
                         
                     new_time = total_time + connection.distance
-                    if new_time > time_limit:
+                    if new_time > self.time_limit:
                         continue
                     
                     # Use heuristic to score this move
@@ -95,7 +96,9 @@ class BeamSearchAlgorithmV2:
             
         return best_route
 
-    def create_solution(self, max_routes: int = 7) -> float:
+    def create_solution(self, max_routes: int = None) -> float:
+        # Use instance default if not specified
+        max_routes = max_routes or self.max_routes
         """
         Create a complete solution with multiple routes.
         

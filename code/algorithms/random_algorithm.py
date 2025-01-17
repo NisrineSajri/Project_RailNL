@@ -1,20 +1,28 @@
 import random
 from typing import List, Tuple
-
 from classes.rail_network import RailNetwork
 from classes.route import Route
 
 class RandomAlgorithm:
-    def __init__(self, rail_network: RailNetwork):
-        self.rail_network = rail_network
+    def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
+        """
+        Initialize RandomAlgorithm.
         
-    def create_route(self, start_station: str, time_limit: int = 180) -> Route:
+        Args:
+            rail_network: The rail network to work with
+            time_limit: Maximum time limit for routes in minutes
+            max_routes: Maximum number of routes allowed
+        """
+        self.rail_network = rail_network
+        self.time_limit = time_limit
+        self.max_routes = max_routes
+        
+    def create_route(self, start_station: str) -> Route:
         """
         Create a single route starting from the given station.
         
         Args:
-            start_station (str): Starting station name
-            time_limit (int): Maximum route time in minutes (default 120)
+            start_station: Starting station name
             
         Returns:
             Route: Created route object
@@ -27,7 +35,7 @@ class RandomAlgorithm:
             station = self.rail_network.stations[current_station]
             possible_connections = [
                 conn for dest, conn in station.connections.items()
-                if not conn.used and route.total_time + conn.distance <= time_limit
+                if not conn.used and route.total_time + conn.distance <= self.time_limit
             ]
             
             if not possible_connections:
@@ -42,16 +50,19 @@ class RandomAlgorithm:
             
         return route
 
-    def create_solution(self, max_routes: int = 20) -> float:
+    def create_solution(self, max_routes: int = None) -> float:
         """
         Create a complete solution with multiple routes.
         
         Args:
-            max_routes (int): Maximum number of routes allowed
+            max_routes: Maximum number of routes allowed
             
         Returns:
             float: Quality score of the solution
         """
+        # Use instance default if not specified
+        max_routes = max_routes or self.max_routes
+        
         for conn in self.rail_network.connections:
             conn.used = False
         self.rail_network.routes.clear()
@@ -84,7 +95,7 @@ class RandomAlgorithm:
         Find the best solution by trying multiple random solutions.
         
         Args:
-            iterations (int): Number of attempts to make
+            iterations: Number of attempts to make
             
         Returns:
             tuple[float, List[Route]]: Best quality score and corresponding routes
