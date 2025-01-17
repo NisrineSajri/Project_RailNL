@@ -1,7 +1,6 @@
-import random
-from typing import List, Tuple
 import os
 import sys
+import csv
 
 # Add the parent directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,132 +11,160 @@ sys.path.append(parent_dir)
 from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.station import Station
-from classes.connection import Connection
-from constants import STATIONS_FILE, CONNECTIONS_FILE
-
+from constants import HOLLAND_CONFIG, NATIONAL_CONFIG  # nu alleen even holland data
 
 class Greedy:
-    def __init__(self, network: RailNetwork):
-        self.network = network  # Bind the network to the Greedy class
-        self.max_routes = 7
-        self.max_time = 120  # Maximum time for a route in minutes
-
-    def get_most_connections(self):
+    def __init__(self, network: RailNetwork, config: dict):
         """
-        Find the station with the most connections.
+        Initialize the Greedy class with the network and configuration.
+
+        Args:
+            network (RailNetwork): The rail network object.
+            config (dict): Configuration dictionary with paths and settings.
+        """
+        self.network = network  # Bind the network to the Greedy class
+        self.max_routes = config['max_routes']  # Use the max_routes from config
+        self.max_time = config['time_limit']  # Use the time limit from config
+        self.halte_coordinates = {}  # Dictionary to store station coordinates {Route 1 : {halte naam : (y, x), ..}}
+
+        # Load the coordinates from the stations file
+        self.load_coordinates(config['stations_file'])
+
+    def load_coordinates(self, filepath: str):
+        """
+        Load station coordinates from the CSV file into the halte_coordinates dictionary.
+        """
+        try:
+            with open(filepath, mode="r", newline='', encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    station = row["station"].strip()
+                    y = float(row["y"])
+                    x = float(row["x"])
+                    self.halte_coordinates[station] = (y, x)
+            print(f"Loaded coordinates for {len(self.halte_coordinates)} stations.")
+        except FileNotFoundError:
+            print(f"Error: The file {filepath} was not found.")
+        except Exception as e:
+            print(f"Error loading coordinates: {e}")
+
+    def get_most_connections(self) -> list[Station]:
+        """
+        Get a list of stations sorted by the number of connections, from most to least.
 
         Returns:
-            Station: The station with the most connections
+            list[Station]: List of stations sorted by number of connections in descending order.
         """
-        # De laagst mogelijke hoeveelheid connecties
-        max_connections = -1
-        station_with_max_connections = None
-
-        for station in self.network.stations.values():
-            num_connections = len(station.connections)
-            if num_connections > max_connections:
-                max_connections = num_connections
-                station_with_max_connections = station
-
-        return station_with_max_connections
+        # Get all stations from the network
+        stations = list(self.network.stations.values())
+        
+        # Sort all stations by the number of connections in descending order
+        stations.sort(key=lambda station: len(station.connections), reverse=True)
+        
+        return stations
 
     def create_route(self, start_station: Station) -> Route:
         """
         Creates a single route starting from the given station.
+        Ensures no station is visited more than once within this route.
         """
         route = Route()
         current_station = start_station.name
+        visited_stations = set()  # Keep track of stations visited in this route
 
         while True:
             station = self.network.stations[current_station]
-            # Get all valid possible connections from the current station
-            possible_connections = []
-            for dest, conn in station.connections.items():
+            visited_stations.add(current_station)  # Mark the station as visited
+
+            # Get all valid connections that:
+            # 1. Have not been used.
+            # 2. Do not exceed the max time.
+            # 3. Lead to stations not already visited in this route.
+            for _, conn in station.connections.items():
                 if not conn.used and route.total_time + conn.distance <= self.max_time:
-                    possible_connections.append(conn)
-
-            if not possible_connections:
+                    other_station = conn.get_other_station(current_station)
+                    if other_station not in visited_stations:
+                        # Directly add the unused connection to the route
+                        if route.add_connection(conn):
+                            # If the connection is successfully added, update the current station
+                            current_station = other_station
+                            break  # Move on to the next connection after adding
+            else:
+                # If no valid connection is found, end the route
                 break
-
-            # Sort connections by unused connections at the destination
-            scored_connections = []
-
-            for conn in possible_connections:
-                # Get the destination station (other end of the connection)
-                dest_station_name = conn.get_other_station(current_station)
-                dest_station = self.network.stations[dest_station_name]
-                
-                # Count unused connections at the destination station (if not already cached)
-                unused_connections = sum(1 for c in dest_station.connections.values() if not c.used)
-                
-                # Add the scored connection with its unused connections count
-                scored_connections.append((unused_connections, conn))
-
-            # If no valid scored connections were found, break out of the loop
-            if not scored_connections:
-                break
-
-            best_connection = None
-            best_unused_count = -1
-
-            for unused_connections, conn in scored_connections:
-                if unused_connections > best_unused_count:
-                    best_unused_count = unused_connections
-                    best_connection = conn
-
-            if best_connection is None or not route.add_connection(best_connection):
-                break
-
-            current_station = best_connection.get_other_station(current_station)
 
         return route
 
+    def save_route_coordinates(self, route: Route):
+        """
+        Save the coordinates of the stations in a route to a dictionary.
+
+        Args:
+            route (Route): The route object containing the stations.
+
+        Returns:
+            dict: A dictionary where keys are station names and values are (y, x) coordinates.
+        """
+        route_coordinates = {}
+
+        for station in route.stations:  # Use the 'stations' attribute from Route
+            if station in self.halte_coordinates:
+                route_coordinates[station] = self.halte_coordinates[station]
+            else:
+                print(f"Warning: Coordinates for station '{station}' not found.") #debugg check voor mij
+
+        return route_coordinates
+
+
     def runGreedy(self):
         """
-        Run the greedy algorithm to create routes.
+        Run the greedy algorithm to create routes using a sorted list of stations.
         """
-        # Reset all connections
+        # Reset all connections om mijn connecties te selecteren
         for conn in self.network.connections:
             conn.used = False
         self.network.routes.clear()
 
-        # Get starting station (one with the most connections)
-        start_station = self.get_most_connections()
-        print(f"Starting with station: {start_station.name} with {len(start_station.connections)} connections")
+        # Get the sorted list of stations by number of connections
+        sorted_stations = self.get_most_connections()
+        used_stations = set()  # Track stations already used as starting points 
 
-        while len(self.network.routes) < self.max_routes:
+        # Dictionary to store all routes and their respective coordinates
+        all_routes_coordinates = {}
+
+        for start_station in sorted_stations:
+            # Check if the station has available connections
+            if start_station.name in used_stations:
+                continue  # Skip this station if it has already been used as a starting point
+
+            print(f"Starting with station: {start_station.name} with {len(start_station.connections)} connections")
+
+            # Mark the station as used
+            used_stations.add(start_station.name)
+
             # Create a route starting from the current station
             route = self.create_route(start_station)
 
-            if not route.connections_used:
-                # If we couldn't create a route, find the next station with the most unused connections
-                unused_found = False
-                for station in sorted(
-                    self.network.stations.values(),
-                    key=lambda s: sum(1 for c in s.connections.values() if not c.used),
-                    reverse=True,
-                ):
-                    if any(not conn.used for conn in station.connections.values()):
-                        start_station = station
-                        unused_found = True
-                        break
-
-                if not unused_found:
-                    break
-            else:
+            # Add the route to the network if it contains connections
+            if route.connections_used:
                 self.network.routes.append(route)
-                # Update start_station to the station with the most unused connections
-                start_station = max(
-                    self.network.stations.values(),
-                    key=lambda s: sum(1 for c in s.connections.values() if not c.used),
-                )
 
-            # Check if all connections are used
-            if all(conn.used for conn in self.network.connections):
+                # Save the route coordinates to the dictionary
+                route_coordinates = self.save_route_coordinates(route)
+                all_routes_coordinates[f"Route {len(self.network.routes)}"] = route_coordinates
+
+            # Check if the maximum number of routes has been reached
+            if len(self.network.routes) >= self.max_routes:
                 break
+
+        # Print the saved coordinates 
+        print("\nSaved route coordinates:")
+        for route_name, coordinates in all_routes_coordinates.items():
+            print(f"{route_name}: {coordinates}")
 
         # Calculate and return quality
         return self.network.calculate_quality()
+
 
 
 # Main function for testing
@@ -145,20 +172,26 @@ if __name__ == "__main__":
     # Initialize the RailNetwork
     network = RailNetwork()
 
-    # Load stations and connections
-    network.load_stations(STATIONS_FILE)
-    network.load_connections(CONNECTIONS_FILE)
+    # Load stations and connections using the HOLLAND_CONFIG paths
+    network.load_stations(HOLLAND_CONFIG['stations_file'])
+    network.load_connections(HOLLAND_CONFIG['connections_file'])
 
     # Print initial network details
     print(f"Loaded {len(network.stations)} stations and {len(network.connections)} connections.")
 
-    # Run the Greedy algorithm
-    greedy = Greedy(network)
+    # Run the Greedy algorithm using the HOLLAND_CONFIG
+    greedy = Greedy(network, HOLLAND_CONFIG)
     quality = greedy.runGreedy()
 
-    # Print results
+    # Print routes
     print("\nRoutes created:")
-    for i, route in enumerate(network.routes):
-        print(f"Route {i + 1}: {route}")
 
-    print(f"\nNetwork quality: {quality}")
+    route_number = 1
+    for route in network.routes:
+        # Print current route number and route
+        print("Route " + str(route_number) + ": " + str(route))
+        route_number = route_number + 1
+
+    # Print quality
+    print("")
+    print("Network quality: " + str(quality))

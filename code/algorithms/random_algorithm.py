@@ -1,23 +1,14 @@
 import random
 from typing import List, Tuple
-import os
-import sys
-
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
 
 from classes.rail_network import RailNetwork
 from classes.route import Route
-from classes.connection import Connection
-from constants import STATIONS_FILE, CONNECTIONS_FILE
 
 class RandomAlgorithm:
     def __init__(self, rail_network: RailNetwork):
         self.rail_network = rail_network
         
-    def create_route(self, start_station: str, time_limit: int = 120) -> Route:
+    def create_route(self, start_station: str, time_limit: int = 180) -> Route:
         """
         Create a single route starting from the given station.
         
@@ -51,7 +42,7 @@ class RandomAlgorithm:
             
         return route
 
-    def create_solution(self, max_routes: int = 7) -> float:
+    def create_solution(self, max_routes: int = 20) -> float:
         """
         Create a complete solution with multiple routes.
         
@@ -112,22 +103,3 @@ class RandomAlgorithm:
                     new_route.connections_used = old_route.connections_used.copy()
         
         return best_quality, best_routes
-
-if __name__ == "__main__":
-    try:
-        network = RailNetwork()
-        network.load_stations(STATIONS_FILE)
-        network.load_connections(CONNECTIONS_FILE)
-        
-        random_algo = RandomAlgorithm(network)
-        best_quality, best_routes = random_algo.find_best_solution(iterations=100)
-        
-        from classes.solution_statistics import SolutionStatistics
-        stats = SolutionStatistics(best_quality, best_routes)
-        stats.print_stats()
-        
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        print(f"Current working directory: {os.getcwd()}")
-        print(f"Stations file path: {STATIONS_FILE}")
-        print(f"Connections file path: {CONNECTIONS_FILE}")
