@@ -2,6 +2,8 @@ from typing import List
 import csv
 import os
 import sys
+import pandas as pd
+import folium
 
 # Add the parent directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -36,20 +38,16 @@ class SolutionStatistics:
         print(f"Total time (Min): {self.total_time} minutes")
         print(f"Total connections used: {self.total_connections}")
 
-        # Opslaan van de routes in een CSV-bestand
-        with open('routes.csv', mode='w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            for route in self.routes:
-                writer.writerow(route.stations)
-
-        print(f"Routes have been saved to 'routes.csv'.")
-        
         print("\nDetailed Routes:")
         for i, route in enumerate(self.routes, 1):
             print(f"\nRoute {i}:")
             print(f"Stations: {' -> '.join(route.stations)}")
             print(f"Time: {route.total_time} minutes")
             print(f"Connections: {len(route.connections_used)}")
+
+        self.visualisation_algorithms()
+        print("For the visualization of the routes go to visualization_algorithms.html")
+        
             
     def get_summary(self) -> dict:
         """
@@ -104,3 +102,83 @@ class SolutionStatistics:
             'time_diff': self.total_time - other.total_time,
             'connections_diff': self.total_connections - other.total_connections
         }
+    
+    def visualisation_algorithms(self):
+        # We slaan de routes van het algoritme dat we runnen via main op in routes.csv
+        with open('visualization/routes.csv', mode='w', newline='') as file:
+            writer = csv.writer(file)
+            for route in self.routes:
+                writer.writerow(route.stations)
+
+        # We maken een dictionary met de coördinaten van elk station gekoppeld aan het bijbehorende station
+        stations = pd.read_csv('../data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
+        station_coordinate = {}
+        for index, row in stations.iterrows():
+            station = row['station']
+            y_coordinate = row['y']
+            x_coordinate = row['x']
+            station_coordinate[station] = {'y': y_coordinate, 'x': x_coordinate}
+
+        # We creëren een kaart gezoomed op Nederland
+        m = folium.Map(location=[52.1326, 4.2913], zoom_start=7)
+
+        for station, coordinate in station_coordinate.items():
+            # We kijken elk station in één van de routes zit, en plaatsen hier een marker
+            if any(station in route.stations for route in self.routes):
+                folium.Marker(
+                    location=[coordinate['y'], coordinate['x']],
+                    popup=station,
+                ).add_to(m)
+
+        # Bron: https://gist.github.com/blaylockbk/0f95f9e57f7713a890ebf01be088dc5e
+        colors = [
+            "red",
+            "green",
+            "yellow",
+            "blue",
+            "orange",
+            "purple",
+            "cyan",
+            "magenta",
+            "lime",
+            "pink",
+            "teal",
+            "lavender",
+            "brown",
+            "beige",
+            "maroon",
+            "mint",
+            "olive",
+            "apricot",
+            "navy",
+            "grey",
+        ]
+
+        # We gebruiken een color index voor de verschillende kleuren
+        color_index = 0  
+
+        # We gaan elke berekende route door
+        for route in self.routes:
+            for i in range(len(route.stations) - 1):
+                # We definiëren de start en eind-stations uit de lijst met routes
+                station1 = route.stations[i]
+                station2 = route.stations[i + 1]
+
+                if station1 in station_coordinate and station2 in station_coordinate:
+                # We verbinden de start en eind-stations met elkaar met lijnen
+                    folium.PolyLine(
+                        locations=[
+                            [station_coordinate[station1]['y'], station_coordinate[station1]['x']],
+                            [station_coordinate[station2]['y'], station_coordinate[station2]['x']]
+                        ], color = colors[color_index] 
+                    ).add_to(m)
+            # Zodat elke route een andere kleur heeyt
+            color_index = color_index + 1
+        
+        # We slaan het bestand op in de visualization map
+        m.save("visualization/visualization_algorithms.html")
+
+
+
+        
+
