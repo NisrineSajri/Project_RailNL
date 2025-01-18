@@ -1,29 +1,47 @@
-# hill_climber.py
+import random
+import os
+import sys
+
+# Add the parent directory to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from typing import List, Tuple
 from classes.rail_network import RailNetwork
 from classes.route import Route
+from greedy import GreedyAlgorithm
+from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 from classes.station import Station
 
-class HilClimberAlgorithm:
 
-
-
-
-    def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
+class HillClimberAlgorithm:
+    def __init__(self, network: RailNetwork):
         """
-        Find best solution (single iteration since deterministic).
-        
+        Initialize the HillClimber class.
         Args:
-            iterations: Kept for API compatibility
-            
-        Returns:
-            Tuple[float, List[Route]]: Quality score and corresponding routes
+            network (RailNetwork): The rail network of stations and connections.
         """
-        quality = self.runGreedy()
-        best_routes = [Route() for _ in self.network.routes]
-        for new_route, old_route in zip(best_routes, self.network.routes):
-            new_route.stations = old_route.stations.copy()
-            new_route.total_time = old_route.total_time
-            new_route.connections_used = old_route.connections_used.copy()
-        
-        return quality, best_routes
+        self.network = network
+        self.best_solution = None
+        self.best_quality = 0
+
+    def generate_initial_solution(self):
+        """
+        Generate an initial solution using the Greedy algorithm.
+        """
+        greedy = GreedyAlgorithm(self.network)
+        quality = greedy.runGreedy()  # Get the greedy solution's total quality
+        self.best_solution = list(self.network.routes)  # Save the greedy routes
+        self.best_quality = quality
+
+    def evaluate_solution(self) -> float:
+        """
+        Evaluate the quality of the current solution.
+        Returns:
+            float: The quality of the solution (time).
+        """
+        return self.network.calculate_quality()  # Implement your quality evaluation function
+
+
+
