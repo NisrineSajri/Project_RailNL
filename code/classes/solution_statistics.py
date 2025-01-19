@@ -104,11 +104,22 @@ class SolutionStatistics:
         }
     
     def visualisation_algorithms(self):
+        # Bron: https://www.tutorialspoint.com/how-to-save-a-python-dictionary-to-csv-file
         # We slaan de routes van het algoritme dat we runnen via main op in routes.csv
         with open('visualization/routes.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             for route in self.routes:
-                writer.writerow(route.stations)
+
+                # we willen geen dubbele stations op één rij
+                route_unique = []
+                previous_station = None
+                for station in route.stations:
+                    if station != previous_station:
+                        route_unique.append(station)
+                    previous_station = station
+
+                # we hebben nu alle routes zonder dubbele stations
+                writer.writerow(route_unique)
 
         # We maken een dictionary met de coördinaten van elk station gekoppeld aan het bijbehorende station
         stations = pd.read_csv('../data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
@@ -170,7 +181,7 @@ class SolutionStatistics:
                         locations=[
                             [station_coordinate[station1]['y'], station_coordinate[station1]['x']],
                             [station_coordinate[station2]['y'], station_coordinate[station2]['x']]
-                        ], color = colors[color_index] 
+                        ], color = colors[color_index]
                     ).add_to(m)
             # Zodat elke route een andere kleur heeyt
             color_index = color_index + 1
