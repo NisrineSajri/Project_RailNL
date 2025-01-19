@@ -1,47 +1,153 @@
+# https://www.geeksforgeeks.org/introduction-hill-climbing-artificial-intelligence/?utm_source=chatgpt.com#pseudocode-of-hill-climbing-algorithm
+
 import random
-import os
-import sys
 
-# Add the parent directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-
+from copy import deepcopy
 from typing import List, Tuple
 from classes.rail_network import RailNetwork
 from classes.route import Route
-from greedy import GreedyAlgorithm
-from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
-from classes.station import Station
+from algorithms.greedy import GreedyAlgorithm
 
-
-class HillClimberAlgorithm:
-    def __init__(self, network: RailNetwork):
+class HillClimber:
+    def __init__(self, network: RailNetwork, initial_routes: List[Route] = None, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialize the HillClimber class.
+        Initialiseer de HillClimber met een initiële oplossing (greedy algoritme)
         Args:
-            network (RailNetwork): The rail network of stations and connections.
+            network: Het spoornetwerk om mee te werken
+            max_routes: Maximaal aantal routes
+            time_limit: Maximale tijdslimiet voor routes in minuten
+            current_routes: de initiële oplossing 
         """
         self.network = network
-        self.best_solution = None
-        self.best_quality = 0
+        self.max_routes = max_routes
+        self.max_time = time_limit
 
-    def generate_initial_solution(self):
-        """
-        Generate an initial solution using the Greedy algorithm.
-        """
-        greedy = GreedyAlgorithm(self.network)
-        quality = greedy.runGreedy()  # Get the greedy solution's total quality
-        self.best_solution = list(self.network.routes)  # Save the greedy routes
-        self.best_quality = quality
+        # Als geen initiële oplossing wordt gegeven, gebruik GreedyAlgorithm 
+        # (of andere algorithm, morgen vragen)
+        if initial_routes is None:
+            greedy = GreedyAlgorithm(network, time_limit=time_limit, max_routes=max_routes)
+            _, best_routes = greedy.find_best_solution()
 
-    def evaluate_solution(self) -> float:
+        self.current_routes = self.initial_solution(best_routes)
+
+    def initial_solution(self, routes: List[Route]) -> List[Route]:
+        """Maak een diepe kopie van routes om de originele routes niet te wijzigen."""
+        return deepcopy(routes)
+
+    def change_routes(self, route: Route) -> Route:
         """
-        Evaluate the quality of the current solution.
+        Maak een kleine aanpassing aan een route.
+        Mogelijke aanpassingen (random):
+        1. Verwijder laatste verbinding (dus de één na laatste en laatste halte weg) en probeer een ander pad
+        2. Verwijder willekeurige verbinding en herbouw vanaf dat punt
+        3. Begin vanaf een ander station in de route
+        """
+        new_route = Route()
+        optie = random.choice([1, 2, 3])
+            
+        # Kies een startpunt gebaseerd op optie type (random keuze)
+        
+        # Verwijder laatste verbinding
+        if optie == 1:
+            # ckeck of de route meer dan 2 stations bevat
+            if len(route.stations) > 2:
+                # Kies dan de op één na laatste station als startpunt
+                start_idx = len(route.stations) - 2
+                # We zoeken naar connecties vanaf dat punt
+                start_station = route.stations[start_idx]
+            else:
+                # Als er maar 2 of minder stations zijn, kies het eerste station als startpunt
+                start_station = route.stations[0]
+        
+        # Verwijder willekeurige verbinding
+        elif optie == 2: 
+            # Controleer of de route meer dan 2 stations bevat
+            if len(route.stations) > 2:
+                # Kies dan een willekeurig station tot het op één na laatste station
+                start_idx = random.randint(0, len(route.stations) - 2)
+                # We zoeken naar connecties vanaf dat punt 
+                start_station = route.stations[start_idx]
+            else:
+                # Als er maar 2 of minder stations zijn, kies het eerste station als startpunt
+                start_station = route.stations[0]
+        
+        # Begin vanaf een ander station in de route
+        elif optie == 3: 
+            # Kies willekeurig een station uit de route als startpunt
+            start_station = random.choice(route.stations)
+
+        # Maak een nieuwe route vanaf het gekozen startstation (create_route() van greedy gebruikt)
+        greedy_algorithm = GreedyAlgorithm(self.network)
+
+        # Creëer de route vanuit het gekozen startstation
+        new_route = greedy_algorithm.create_route(self.network.stations[start_station])
+        
+        return new_route 
+    
+    def generate_neighbors(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
+        """
+        Voer hill climbing algoritme uit om een betere oplossing te vinden.
+
+        Args:
+            iterations: Aantal iteraties om uit te voeren
+
         Returns:
-            float: The quality of the solution (time).
+            Tuple[float, List[Route]]: Beste kwaliteitsscore en bijbehorende routes
         """
-        return self.network.calculate_quality()  # Implement your quality evaluation function
+        best_quality = self.network.calculate_quality()
+        best_routes = self.initial_solution(self.current_routes)
+
+        i = 0
+        while i < iterations:
+            # Kies willekeurige route om aan te passen
+            route = random.choice(self.current_routes)
+
+            # Bewaar huidige staat
+            old_route = route
+            # zet die verbinding op unused om zo een andere verbinding te maken en die te kunnen grbuiken als nodig
+            for conn in old_route.connections_used:
+                conn.used = False
+
+            # Probeer aanpassing
+            new_route = self.change_routes(old_route)
+            # Zoek de index van de route in de lijst en vervang [route1, route2, route3]
+            route_idx = self.current_routes.index(old_route)
+            self.current_routes[route_idx] = new_route # dus [route1, new_route, route3]
+
+            # Bereken nieuwe kwaliteit
+            new_quality = self.network.calculate_quality()
+
+            # Accepteer als beter, anders terugdraaien
+            if new_quality > best_quality:
+                best_quality = new_quality
+                best_routes = self.initial_solution(self.current_routes)
+            else:
+                # Zet oude route terug
+                self.current_routes[route_idx] = old_route
+                for conn in old_route.connections_used:
+                    conn.used = True
+            
+            # Verhoog de teller voor de volgende iteratie
+            i += 1
+        
+        return best_quality, best_routes
 
 
-
+    def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
+        """
+        Find best solution (single iteration since deterministic).
+        
+        Args:
+            iterations: Kept for API compatibility
+            
+        Returns:
+            Tuple[float, List[Route]]: Quality score and corresponding routes
+        """
+        quality = self.network.calculate_quality()
+        best_routes = [Route() for _ in self.current_routes]
+        for new_route, old_route in zip(best_routes, self.current_routes):
+            new_route.stations = old_route.stations.copy()
+            new_route.total_time = old_route.total_time
+            new_route.connections_used = old_route.connections_used.copy()
+        
+        return quality, best_routes
