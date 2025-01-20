@@ -33,14 +33,7 @@ class HillClimber:
             
             greedy = GreedyAlgorithm(network, time_limit=time_limit, max_routes=max_routes)
             _, best_routes = greedy.find_best_solution()
-            if best_routes:  # Only initialize with best_routes if they exist
-                self.current_routes = self.copy_routes(best_routes)
-            else:
-                # Create at least one initial route
-                initial_route = Route(time_limit=self.max_time)
-                first_station = next(iter(network.stations))
-                initial_route.stations = [first_station]
-                self.current_routes = [initial_route]
+            self.current_routes = self.copy_routes(best_routes)
 
     def copy_routes(self, routes: List[Route]) -> List[Route]:
         """Maak een diepe kopie van routes om de originele routes niet te wijzigen."""
@@ -56,7 +49,6 @@ class HillClimber:
         """
         new_route = Route(time_limit=self.max_time)
         optie = random.choice([1, 2, 3])
-            
         # Kies een startpunt gebaseerd op optie type (random keuze)
         
         # Verwijder laatste verbinding
@@ -91,10 +83,6 @@ class HillClimber:
 
         # Creëer de route vanuit het gekozen startstation
         new_route = greedy_algorithm.create_route(self.network.stations[start_station])
-        
-        if not new_route.stations:
-            new_route.stations = [start_station]
-            
         return new_route 
     
     def find_best_solution(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
@@ -112,6 +100,7 @@ class HillClimber:
             conn.used = False
         self.network.routes.clear()
         
+        # Bugfix, if geen routes beschikbaar wordt een lege oplossing geretourneerd 
         if not self.current_routes:
             return 0, []
             
@@ -120,6 +109,7 @@ class HillClimber:
         
         i = 0
         while i < iterations:
+            # Bugfix 
             try:
                 # Kies willekeurige route om aan te passen
                 route = random.choice(self.current_routes)
@@ -150,6 +140,7 @@ class HillClimber:
                 
                 # Verhoog de teller voor de volgende iteratie
                 i += 1
+            # Er is fout optreedt de iteratie wordt beëindigd
             except Exception:
                 break
                 
