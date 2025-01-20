@@ -4,6 +4,7 @@ import os
 import sys
 import pandas as pd
 import folium
+import matplotlib.pyplot as plt
 
 # Add the parent directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -44,6 +45,7 @@ class SolutionStatistics:
             print(f"Stations: {' -> '.join(route.stations)}")
             print(f"Time: {route.total_time} minutes")
             print(f"Connections: {len(route.connections_used)}")
+
 
         self.visualisation_algorithms()
         print("For the visualization of the routes go to visualization_algorithms.html")
@@ -170,6 +172,15 @@ class SolutionStatistics:
 
         # We gaan elke berekende route door
         for route in self.routes:
+            route_unique = []
+            previous_station = None
+            for station in route.stations:
+                if station != previous_station:
+                    route_unique.append(station)
+                previous_station = station
+            
+            route_description = f"Route {color_index + 1}:\n" + " -> ".join(route_unique)
+
             for i in range(len(route.stations) - 1):
                 # We definiëren de start en eind-stations uit de lijst met routes
                 station1 = route.stations[i]
@@ -181,13 +192,18 @@ class SolutionStatistics:
                         locations=[
                             [station_coordinate[station1]['y'], station_coordinate[station1]['x']],
                             [station_coordinate[station2]['y'], station_coordinate[station2]['x']]
-                        ], color = colors[color_index]
+                        ], color = colors[color_index],
+                        weight = 5,
+                        popup = folium.Popup(route_description, max_width=200)
                     ).add_to(m)
             # Zodat elke route een andere kleur heeyt
             color_index = color_index + 1
         
         # We slaan het bestand op in de visualization map
         m.save("visualization/visualization_algorithms.html")
+
+
+
 
 
 
