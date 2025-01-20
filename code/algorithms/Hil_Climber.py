@@ -28,8 +28,14 @@ class HillClimber:
         if initial_routes is None:
             greedy = GreedyAlgorithm(network, time_limit=time_limit, max_routes=max_routes)
             _, best_routes = greedy.find_best_solution()
-
-        self.current_routes = self.copy_routes(best_routes)
+            if best_routes:  # Only initialize with best_routes if they exist
+                self.current_routes = self.copy_routes(best_routes)
+            else:
+                # Create at least one initial route
+                initial_route = Route()
+                first_station = next(iter(network.stations))
+                initial_route.stations = [first_station]
+                self.current_routes = [initial_route]
 
     def copy_routes(self, routes: List[Route]) -> List[Route]:
         """Maak een diepe kopie van routes om de originele routes niet te wijzigen."""
@@ -93,6 +99,9 @@ class HillClimber:
         Returns:
             Tuple[float, List[Route]]: Beste kwaliteitsscore en bijbehorende routes
         """
+        if not self.current_routes:  # If no routes exist, return empty solution
+            return 0, []
+            
         best_quality = self.network.calculate_quality()
         best_routes = self.copy_routes(self.current_routes)
         
