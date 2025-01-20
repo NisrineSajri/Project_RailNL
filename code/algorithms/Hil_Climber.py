@@ -8,6 +8,7 @@ from classes.rail_network import RailNetwork
 from classes.route import Route
 from algorithms.greedy import GreedyAlgorithm
 
+
 class HillClimber:
     def __init__(self, network: RailNetwork, initial_routes: List[Route] = None, time_limit: int = 120, max_routes: int = 7):
         """
@@ -28,13 +29,13 @@ class HillClimber:
             greedy = GreedyAlgorithm(network, time_limit=time_limit, max_routes=max_routes)
             _, best_routes = greedy.find_best_solution()
 
-        self.current_routes = self.initial_solution(best_routes)
+        self.current_routes = self.copy_routes(best_routes)
 
-    def initial_solution(self, routes: List[Route]) -> List[Route]:
+    def copy_routes(self, routes: List[Route]) -> List[Route]:
         """Maak een diepe kopie van routes om de originele routes niet te wijzigen."""
         return deepcopy(routes)
 
-    def change_routes(self, route: Route) -> Route:
+    def modify_route(self, route: Route) -> Route:
         """
         Maak een kleine aanpassing aan een route.
         Mogelijke aanpassingen (random):
@@ -60,17 +61,15 @@ class HillClimber:
                 start_station = route.stations[0]
         
         # Verwijder willekeurige verbinding
-        elif optie == 2: 
+        elif optie == 2:
             # Controleer of de route meer dan 2 stations bevat
             if len(route.stations) > 2:
-                # Kies dan een willekeurig station tot het op één na laatste station
-                start_idx = random.randint(0, len(route.stations) - 2)
-                # We zoeken naar connecties vanaf dat punt 
-                start_station = route.stations[start_idx]
+                # Kies willekeurig een station tot het op één na laatste station
+                start_station = random.choice(route.stations[:-1])
             else:
                 # Als er maar 2 of minder stations zijn, kies het eerste station als startpunt
                 start_station = route.stations[0]
-        
+
         # Begin vanaf een ander station in de route
         elif optie == 3: 
             # Kies willekeurig een station uit de route als startpunt
@@ -84,7 +83,7 @@ class HillClimber:
         
         return new_route 
     
-    def generate_neighbors(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
+    def find_best_solution(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
         """
         Voer hill climbing algoritme uit om een betere oplossing te vinden.
 
@@ -95,8 +94,8 @@ class HillClimber:
             Tuple[float, List[Route]]: Beste kwaliteitsscore en bijbehorende routes
         """
         best_quality = self.network.calculate_quality()
-        best_routes = self.initial_solution(self.current_routes)
-
+        best_routes = self.copy_routes(self.current_routes)
+        
         i = 0
         while i < iterations:
             # Kies willekeurige route om aan te passen
@@ -107,9 +106,8 @@ class HillClimber:
             # zet die verbinding op unused om zo een andere verbinding te maken en die te kunnen grbuiken als nodig
             for conn in old_route.connections_used:
                 conn.used = False
-
             # Probeer aanpassing
-            new_route = self.change_routes(old_route)
+            new_route = self.modify_route(old_route)
             # Zoek de index van de route in de lijst en vervang [route1, route2, route3]
             route_idx = self.current_routes.index(old_route)
             self.current_routes[route_idx] = new_route # dus [route1, new_route, route3]
@@ -120,7 +118,7 @@ class HillClimber:
             # Accepteer als beter, anders terugdraaien
             if new_quality > best_quality:
                 best_quality = new_quality
-                best_routes = self.initial_solution(self.current_routes)
+                best_routes = self.copy_routes(self.current_routes)
             else:
                 # Zet oude route terug
                 self.current_routes[route_idx] = old_route
@@ -128,26 +126,26 @@ class HillClimber:
                     conn.used = True
             
             # Verhoog de teller voor de volgende iteratie
-            i += 1
-        
+            i += 1  
         return best_quality, best_routes
 
 
-    def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
+    def find_single_solution(self) -> Tuple[float, List[Route]]:
         """
         Find best solution (single iteration since deterministic).
-        
-        Args:
-            iterations: Kept for API compatibility
             
         Returns:
             Tuple[float, List[Route]]: Quality score and corresponding routes
         """
+        # Bereken de huidige kwaliteit van het netwerk
         quality = self.network.calculate_quality()
+        
+        # Maak een diepe kopie van de huidige routes
         best_routes = [Route() for _ in self.current_routes]
         for new_route, old_route in zip(best_routes, self.current_routes):
             new_route.stations = old_route.stations.copy()
             new_route.total_time = old_route.total_time
             new_route.connections_used = old_route.connections_used.copy()
         
+        # Geef de huidige kwaliteit en routes terug
         return quality, best_routes
