@@ -33,11 +33,8 @@ class GreedyAlgorithm:
         return stations
 
     def create_route(self, start_station: Station) -> Route:
-        """
-        Creates a single route starting from the given station.
-        Ensures no station is visited more than once within this route.
-        """
-        route = Route()
+        """Creates a single route starting from the given station."""
+        route = Route(time_limit=self.max_time)  # Pass the time limit
         current_station = start_station.name
         visited_stations = set()  # Keep track of stations visited in this route
 

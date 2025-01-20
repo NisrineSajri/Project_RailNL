@@ -16,7 +16,7 @@ from algorithms.beam_search import BeamSearchAlgorithm
 from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
 from algorithms.dijkstra_algorithm import DijkstraAlgorithm
 from algorithms.greedy import GreedyAlgorithm
-from algorithms.Hil_Climber import HillClimber
+from algorithms.hill_climber import HillClimber
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:

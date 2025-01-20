@@ -2,13 +2,17 @@ from typing import List, Set
 from .connection import Connection
 
 class Route:
-    def __init__(self):
+    def __init__(self, time_limit: int = 180):  # Default to largest time limit
         """
         Initialize a Route object.
+        
+        Args:
+            time_limit: Maximum time limit for the route in minutes
         """
         self.stations: List[str] = []
         self.total_time = 0
         self.connections_used: Set[Connection] = set()
+        self.time_limit = time_limit
 
     def add_connection(self, connection: Connection) -> bool:
         """
@@ -20,7 +24,7 @@ class Route:
         Returns:
             bool: True if connection was added successfully, False otherwise
         """
-        if self.total_time + connection.distance > 120:  # 2 hour limit
+        if self.total_time + connection.distance > self.time_limit:
             return False
 
         self.total_time += connection.distance
