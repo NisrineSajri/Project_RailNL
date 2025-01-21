@@ -16,7 +16,7 @@ from algorithms.beam_search import BeamSearchAlgorithm
 from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
 from algorithms.dijkstra_algorithm import DijkstraAlgorithm
 from algorithms.greedy import GreedyAlgorithm
-from algorithms.hill_climber import HillClimber
+from code.algorithms.hill_climber_bad import HillClimber
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
@@ -42,7 +42,7 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
     else:
         best_quality, best_routes = algorithm.find_best_solution()
     
-    stats = SolutionStatistics(best_quality, best_routes)
+    stats = SolutionStatistics(best_quality, best_routes, network)
     print(f"\nResults for {algorithm_class.__name__}:")
     stats.print_stats()
 

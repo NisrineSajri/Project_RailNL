@@ -1,6 +1,6 @@
 import csv
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 from .station import Station
 from .connection import Connection
 from .route import Route
@@ -46,6 +46,52 @@ class RailNetwork:
                 self.stations[connection.station1].add_connection(connection)
                 self.stations[connection.station2].add_connection(connection)
 
+    def get_used_connections(self) -> Set[Connection]:
+        """
+        Get set of all unique connections used across all routes.
+        
+        Returns:
+            Set[Connection]: Set of unique connections that are used
+        """
+        used_connections = set()
+        for route in self.routes:
+            used_connections.update(route.connections_used)
+        return used_connections
+
+    def calculate_quality(self) -> float:
+        """
+        Calculate the quality score of the current solution using unique connections.
+        
+        Returns:
+            float: Quality score based on the formula K = p * 10000 - (T * 100 + Min)
+            where:
+            - p is the proportion of connections used
+            - T is the number of routes
+            - Min is the total time of all routes
+        """
+        total_connections = len(self.connections)
+        used_connections = len(self.get_used_connections())
+        p = used_connections / total_connections
+        T = len(self.routes)
+        Min = sum(route.total_time for route in self.routes)
+        
+        K = p * 10000 - (T * 100 + Min)
+        return K
+
+    def sync_connection_states(self):
+        """
+        Synchronize connection.used flags with route.connections_used sets.
+        Ensures that the connection.used flags match what's actually used in routes.
+        """
+        # First reset all connections
+        for conn in self.connections:
+            conn.used = False
+            
+        # Then mark used connections based on routes
+        used_conns = self.get_used_connections()
+        for conn in used_conns:
+            conn.used = True
+
     def create_route(self, start_station: str) -> Route:
         """
         Create a single route starting from the given station.
@@ -58,6 +104,7 @@ class RailNetwork:
         """
         route = Route()
         current_station = start_station
+        route.stations = [start_station]
         
         while True:
             station = self.stations[current_station]
@@ -74,21 +121,14 @@ class RailNetwork:
                 break
                 
             current_station = connection.get_other_station(current_station)
+            route.stations.append(current_station)
             
         return route
 
-    def calculate_quality(self) -> float:
+    def reset(self):
         """
-        Calculate the quality score of the current solution.
-        
-        Returns:
-            float: Quality score
+        Reset the network state by clearing all routes and connection usage.
         """
-        total_connections = len(self.connections)
-        used_connections = sum(1 for conn in self.connections if conn.used)
-        p = used_connections / total_connections
-        T = len(self.routes)
-        Min = sum(route.total_time for route in self.routes)
-        
-        K = p * 10000 - (T * 100 + Min)
-        return K
+        self.routes.clear()
+        for conn in self.connections:
+            conn.used = False
