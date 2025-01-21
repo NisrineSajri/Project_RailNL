@@ -134,7 +134,6 @@ class SolutionStatistics:
 
         # We creëren een kaart gezoomed op Nederland
         m = folium.Map(location=[52.1326, 4.2913], zoom_start=7)
-
         for station, coordinate in station_coordinate.items():
             # We kijken elk station in één van de routes zit, en plaatsen hier een marker
             if any(station in route.stations for route in self.routes):
@@ -143,7 +142,6 @@ class SolutionStatistics:
                     popup=station,
                 ).add_to(m)
 
-        # Bron: https://gist.github.com/blaylockbk/0f95f9e57f7713a890ebf01be088dc5e
         colors = [
             "red",
             "green",
@@ -154,17 +152,17 @@ class SolutionStatistics:
             "cyan",
             "magenta",
             "lime",
-            "pink",
+            "darkblue",
             "teal",
-            "lavender",
-            "brown",
-            "beige",
-            "maroon",
-            "mint",
+            "gold",
+            "pink",
+            "darkred",
+            "violet",
             "olive",
-            "apricot",
-            "navy",
-            "grey",
+            "indigo",
+            "salmon",
+            "turquoise",
+            "plum"
         ]
 
         # We gebruiken een color index voor de verschillende kleuren
@@ -193,6 +191,7 @@ class SolutionStatistics:
                             [station_coordinate[station1]['y'], station_coordinate[station1]['x']],
                             [station_coordinate[station2]['y'], station_coordinate[station2]['x']]
                         ], color = colors[color_index],
+                        opacity = 0.8,
                         weight = 5,
                         popup = folium.Popup(route_description, max_width=200)
                     ).add_to(m)
