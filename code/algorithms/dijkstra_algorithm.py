@@ -69,13 +69,13 @@ class Graph:
         return distances
 
 class DijkstraAlgorithm:
-    def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
+    def __init__(self, rail_network: RailNetwork, time_limit: int = None, max_routes: int = None):
         """
         Initialize DijkstraAlgorithm.
         Args:
             rail_network: The rail network to work with
-            time_limit: Maximum time limit for routes in minutes
-            max_routes: Maximum number of routes allowed
+            time_limit: Maximum time limit for routes in minutes (from config)
+            max_routes: Maximum number of routes allowed (from config)
         """
         self.rail_network = rail_network
         self.time_limit = time_limit
@@ -123,20 +123,19 @@ class DijkstraAlgorithm:
         visited = set()
 
         start_station = self.calculate_start_station(start_stations, visited)
+        
+        # Return None if no valid start station is found
+        if start_station is None:
+            return None, 0, visited_connections
 
-        # Keep track of number of stations in this route
-        num_stations = 1  # Start with 1 for the start station
-        max_stations = 7  # Maximum stations per route
+        visited.add(start_station)
 
-        while current_minutes < self.time_limit and num_stations < max_stations:
+        while current_minutes < self.time_limit:
             next_station, shortest_distance = self.find_next_station(start_station, visited, visited_connections)
 
             if next_station is None or current_minutes + shortest_distance > self.time_limit:
                 break
                 
-            # Increment station count
-            num_stations += 1
-
             # we voegen dit station toe aan de visited set
             visited.add(next_station)
 
@@ -152,7 +151,10 @@ class DijkstraAlgorithm:
             # het nieuwe start station is die van de verbinding
             start_station = next_station
 
-        return current_traject, current_minutes, visited_connections
+        # Only return valid trajectories with at least one connection
+        if len(current_traject) > 0:
+            return current_traject, current_minutes, visited_connections
+        return None, 0, visited_connections
 
     def k_value(self, trajects, visited_connections):
         """We berekenen de K"""
@@ -167,6 +169,10 @@ class DijkstraAlgorithm:
         """
         Find best solution (single iteration since deterministic).
         """
+        # Reset all connections
+        for conn in self.rail_network.connections:
+            conn.used = False
+
         # hier slaan we de trajecten op
         trajects = []
 
@@ -176,15 +182,23 @@ class DijkstraAlgorithm:
         # we maken een lege set om de stations in op te slaan die al als startstation gebruikt zijn
         start_stations = set()
 
-        # zolang we max_routes niet overschreiden
-        while len(trajects) < self.max_routes:
-            current_traject, current_minutes, new_connections = self.traject(start_stations, visited_connections)
-            # Only add non-empty routes
-            if current_traject:  # If route contains connections
-                trajects.append((current_traject, current_minutes))
-                visited_connections = new_connections
-            else:
-                break  # If we get an empty route, stop creating new routes
+        # Keep adding routes until we reach max_routes or can't find more valid routes
+        valid_routes = 0
+        while valid_routes < self.max_routes:
+            result = self.traject(start_stations, visited_connections)
+            if result is None or result[0] is None:
+                break
+                
+            current_traject, current_minutes, new_connections = result
+            trajects.append((current_traject, current_minutes))
+            visited_connections = new_connections
+            valid_routes += 1
+            
+            # Mark connections as used
+            for start, end, _ in current_traject:
+                for conn in self.rail_network.connections:
+                    if {conn.station1, conn.station2} == {start, end}:
+                        conn.used = True
 
         K = self.k_value(trajects, visited_connections)
         
@@ -198,7 +212,6 @@ class DijkstraAlgorithm:
                 for conn in self.rail_network.connections:
                     if {conn.station1, conn.station2} == {start, end}:
                         route.connections_used.add(conn)
-                        conn.used = True
                         if not route.stations:
                             route.stations.append(start)
                         route.stations.append(end)
@@ -206,5 +219,5 @@ class DijkstraAlgorithm:
                         break
             route.total_time = current_time
             best_routes.append(route)
-        
+
         return K, best_routes
