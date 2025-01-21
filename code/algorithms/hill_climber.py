@@ -26,14 +26,10 @@ class HillClimber:
         # Als geen initiële oplossing wordt gegeven, gebruik GreedyAlgorithm 
         # (of andere algorithm, morgen vragen)
         if initial_routes is None:
-            # Reset network state before getting initial solution
-            for conn in self.network.connections:
-                conn.used = False
-            self.network.routes.clear()
-            
             greedy = GreedyAlgorithm(network, time_limit=time_limit, max_routes=max_routes)
             _, best_routes = greedy.find_best_solution()
-            self.current_routes = self.copy_routes(best_routes)
+
+        self.current_routes = self.copy_routes(best_routes)
 
     def copy_routes(self, routes: List[Route]) -> List[Route]:
         """Maak een diepe kopie van routes om de originele routes niet te wijzigen."""
@@ -47,8 +43,9 @@ class HillClimber:
         2. Verwijder willekeurige verbinding en herbouw vanaf dat punt
         3. Begin vanaf een ander station in de route
         """
-        new_route = Route(time_limit=self.max_time)
+        new_route = Route()
         optie = random.choice([1, 2, 3])
+            
         # Kies een startpunt gebaseerd op optie type (random keuze)
         
         # Verwijder laatste verbinding
@@ -79,10 +76,11 @@ class HillClimber:
             start_station = random.choice(route.stations)
 
         # Maak een nieuwe route vanaf het gekozen startstation (create_route() van greedy gebruikt)
-        greedy_algorithm = GreedyAlgorithm(self.network, time_limit=self.max_time)
+        greedy_algorithm = GreedyAlgorithm(self.network)
 
         # Creëer de route vanuit het gekozen startstation
         new_route = greedy_algorithm.create_route(self.network.stations[start_station])
+        
         return new_route 
     
     def find_best_solution(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
@@ -95,56 +93,42 @@ class HillClimber:
         Returns:
             Tuple[float, List[Route]]: Beste kwaliteitsscore en bijbehorende routes
         """
-        # Reset network state
-        for conn in self.network.connections:
-            conn.used = False
-        self.network.routes.clear()
-        
-        # Bugfix, if geen routes beschikbaar wordt een lege oplossing geretourneerd 
-        if not self.current_routes:
-            return 0, []
-            
         best_quality = self.network.calculate_quality()
         best_routes = self.copy_routes(self.current_routes)
         
         i = 0
         while i < iterations:
-            # Bugfix 
-            try:
-                # Kies willekeurige route om aan te passen
-                route = random.choice(self.current_routes)
+            # Kies willekeurige route om aan te passen
+            route = random.choice(self.current_routes)
 
-                # Bewaar huidige staat
-                old_route = route
-                # zet die verbinding op unused om zo een andere verbinding te maken en die te kunnen grbuiken als nodig
+            # Bewaar huidige staat
+            old_route = route
+            # zet die verbinding op unused om zo een andere verbinding te maken en die te kunnen grbuiken als nodig
+            for conn in old_route.connections_used:
+                conn.used = False
+            # Probeer aanpassing
+            new_route = self.modify_route(old_route)
+            # Zoek de index van de route in de lijst en vervang [route1, route2, route3]
+            route_idx = self.current_routes.index(old_route)
+            self.current_routes[route_idx] = new_route # dus [route1, new_route, route3]
+
+            # Bereken nieuwe kwaliteit
+            new_quality = self.network.calculate_quality()
+
+            # Accepteer als beter, anders terugdraaien
+            if new_quality > best_quality:
+                best_quality = new_quality
+                best_routes = self.copy_routes(self.current_routes)
+            else:
+                # Zet oude route terug
+                self.current_routes[route_idx] = old_route
                 for conn in old_route.connections_used:
-                    conn.used = False
-                # Probeer aanpassing
-                new_route = self.modify_route(old_route)
-                # Zoek de index van de route in de lijst en vervang [route1, route2, route3]
-                route_idx = self.current_routes.index(old_route)
-                self.current_routes[route_idx] = new_route # dus [route1, new_route, route3]
-
-                # Bereken nieuwe kwaliteit
-                new_quality = self.network.calculate_quality()
-
-                # Accepteer als beter, anders terugdraaien
-                if new_quality > best_quality:
-                    best_quality = new_quality
-                    best_routes = self.copy_routes(self.current_routes)
-                else:
-                    # Zet oude route terug
-                    self.current_routes[route_idx] = old_route
-                    for conn in old_route.connections_used:
-                        conn.used = True
-                
-                # Verhoog de teller voor de volgende iteratie
-                i += 1
-            # Er is fout optreedt de iteratie wordt beëindigd
-            except Exception:
-                break
-                
+                    conn.used = True
+            
+            # Verhoog de teller voor de volgende iteratie
+            i += 1  
         return best_quality, best_routes
+
 
     def find_single_solution(self) -> Tuple[float, List[Route]]:
         """
