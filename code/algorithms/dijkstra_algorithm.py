@@ -188,11 +188,12 @@ class DijkstraAlgorithm:
             result = self.traject(start_stations, visited_connections)
             if result is None or result[0] is None:
                 break
-                
+
             current_traject, current_minutes, new_connections = result
-            trajects.append((current_traject, current_minutes))
-            visited_connections = new_connections
-            valid_routes += 1
+            if current_traject:
+                trajects.append((current_traject, current_minutes))
+                visited_connections = new_connections
+                valid_routes += 1
             
             # Mark connections as used
             for start, end, _ in current_traject:
@@ -205,6 +206,8 @@ class DijkstraAlgorithm:
         # Convert trajects to Route objects
         best_routes = []
         for traject_data in trajects:
+            if not traject_data[0]:
+                continue
             route = Route()
             current_time = 0
             for start, end, distance in traject_data[0]:
@@ -218,6 +221,7 @@ class DijkstraAlgorithm:
                         current_time += conn.distance
                         break
             route.total_time = current_time
-            best_routes.append(route)
+            if route.total_time > 0:
+                best_routes.append(route)
 
         return K, best_routes
