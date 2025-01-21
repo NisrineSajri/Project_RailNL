@@ -12,18 +12,19 @@ from algorithms.greedy import GreedyAlgorithm
 class HillClimber:
     def __init__(self, network: RailNetwork, initial_routes: List[Route] = None, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialize the HillClimber with an initial solution (greedy algorithm)
+        Initialiseer de HillClimber met een initiële oplossing (greedy algoritme)
         Args:
-            network: The rail network to work with
-            max_routes: Maximum number of routes
-            time_limit: Maximum time limit for routes in minutes
-            initial_routes: Initial solution to start with
+            network: Het spoornetwerk om mee te werken
+            max_routes: Maximaal aantal routes
+            time_limit: Maximale tijdslimiet voor routes in minuten
+            current_routes: de initiële oplossing 
         """
         self.network = network
         self.max_routes = max_routes
         self.max_time = time_limit
 
-        # Initialize current_routes
+        # Als geen initiële oplossing wordt gegeven, gebruik GreedyAlgorithm 
+        # (of andere algorithm, morgen vragen)
         if initial_routes is None:
             # Reset network state before getting initial solution
             for conn in self.network.connections:
@@ -33,8 +34,6 @@ class HillClimber:
             greedy = GreedyAlgorithm(network, time_limit=time_limit, max_routes=max_routes)
             _, best_routes = greedy.find_best_solution()
             self.current_routes = self.copy_routes(best_routes)
-        else:
-            self.current_routes = self.copy_routes(initial_routes)
 
     def copy_routes(self, routes: List[Route]) -> List[Route]:
         """Maak een diepe kopie van routes om de originele routes niet te wijzigen."""

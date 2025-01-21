@@ -22,13 +22,13 @@ class GreedyAlgorithm:
         Get a list of stations sorted by the number of connections, from most to least.
 
         Returns:
-            list[Station]: List of stations sorted by number of connections. minste connect
+            list[Station]: List of stations sorted by number of connections in descending order.
         """
         # Get all stations from the network
         stations = list(self.network.stations.values())
         
         # Sort all stations by the number of connections in descending order
-        stations.sort(key=lambda station: len(station.connections), reverse=False)
+        stations.sort(key=lambda station: len(station.connections), reverse=True)
         
         return stations
 
