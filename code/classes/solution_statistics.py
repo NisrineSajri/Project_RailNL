@@ -14,16 +14,18 @@ sys.path.append(parent_dir)
 from classes.route import Route
 
 class SolutionStatistics:
-    def __init__(self, quality: float, routes: List[Route]):
+    def __init__(self, quality: float, routes: List[Route], network=None, *args):
         """
         Initialize SolutionStatistics with quality score and routes.
         
         Args:
             quality (float): Quality score of the solution
             routes (List[Route]): List of routes in the solution
+            network: The rail network being used
         """
         self.quality = quality
         self.routes = routes
+        self.network = network
         self.total_time = sum(route.total_time for route in routes) if routes else 0
         self.total_connections = sum(len(route.connections_used) for route in routes) if routes else 0
         
@@ -38,6 +40,7 @@ class SolutionStatistics:
         print(f"Number of routes (T): {len(self.routes)}")
         print(f"Total time (Min): {self.total_time} minutes")
         print(f"Total connections used: {self.total_connections}")
+        print(f"Coverage percentage: {self.get_coverage_percentage():.1f}%")
 
         print("\nDetailed Routes:")
         for i, route in enumerate(self.routes, 1):
@@ -45,7 +48,6 @@ class SolutionStatistics:
             print(f"Stations: {' -> '.join(route.stations)}")
             print(f"Time: {route.total_time} minutes")
             print(f"Connections: {len(route.connections_used)}")
-
 
         self.visualisation_algorithms()
         print("For the visualization of the routes go to visualization_algorithms.html")
@@ -73,7 +75,7 @@ class SolutionStatistics:
         Returns:
             float: Percentage of connections covered
         """
-        if not self.routes or not self.routes[0].connections_used:
+        if not self.routes or not self.routes[0].connections_used or not self.network:
             return 0.0
             
         # Get all unique connections from any route
@@ -81,10 +83,8 @@ class SolutionStatistics:
         for route in self.routes:
             used_connections.update(route.connections_used)
             
-        # Get the first connection to access the rail network
-        first_conn = next(iter(used_connections))
-        # Count total possible connections in the network
-        total_possible = len(first_conn.rail_network.connections)
+        # Get total possible connections from the network
+        total_possible = len(self.network.connections)
         
         return (len(used_connections) / total_possible) * 100 if total_possible > 0 else 0.0
         
@@ -106,12 +106,13 @@ class SolutionStatistics:
         }
     
     def visualisation_algorithms(self):
-        # Bron: https://www.tutorialspoint.com/how-to-save-a-python-dictionary-to-csv-file
+        # Create visualization directory if it doesn't exist
+        os.makedirs('visualization', exist_ok=True)
+        
         # We slaan de routes van het algoritme dat we runnen via main op in routes.csv
         with open('visualization/routes.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             for route in self.routes:
-
                 # we willen geen dubbele stations op één rij
                 route_unique = []
                 previous_station = None
@@ -146,7 +147,7 @@ class SolutionStatistics:
             "red",
             "green",
             "yellow",
-            "blue",
+            "blue", 
             "orange",
             "purple",
             "cyan",
@@ -195,16 +196,8 @@ class SolutionStatistics:
                         weight = 5,
                         popup = folium.Popup(route_description, max_width=200)
                     ).add_to(m)
-            # Zodat elke route een andere kleur heeyt
+            # Zodat elke route een andere kleur heeft
             color_index = color_index + 1
         
         # We slaan het bestand op in de visualization map
         m.save("visualization/visualization_algorithms.html")
-
-
-
-
-
-
-        
-
