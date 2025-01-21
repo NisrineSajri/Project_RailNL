@@ -3,6 +3,7 @@ from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.heuristics import RouteHeuristics
 import heapq
+import random
 
 class BeamSearchAlgorithmV2:
     def __init__(self, rail_network: RailNetwork, beam_width: int = 7, time_limit: int = 120, max_routes: int = 7):
@@ -22,7 +23,7 @@ class BeamSearchAlgorithmV2:
         
     def find_route_beam(self, start_station: str) -> Optional[Route]:
         """
-        Use beam search with improved heuristics to find a route.
+        Use beam search with improved heuristics and diversity to find a route.
         
         Args:
             start_station: Starting station name
@@ -32,7 +33,8 @@ class BeamSearchAlgorithmV2:
         """
         initial_route = Route()
         initial_route.stations = [start_station]
-        beam = [(0, start_station, [start_station], 0, {start_station}, initial_route)]
+        # Add small random factor to initial state for diversity
+        beam = [(random.uniform(0, 0.1), start_station, [start_station], 0, {start_station}, initial_route)]
         best_route = None
         best_score = float('-inf')
         
@@ -44,7 +46,11 @@ class BeamSearchAlgorithmV2:
                 
                 # Get all valid next connections with their scores
                 next_moves = []
-                for dest, connection in station.connections.items():
+                # Randomize connection order
+                connections = list(station.connections.items())
+                random.shuffle(connections)
+                
+                for dest, connection in connections:
                     if dest in visited:
                         continue
                         
@@ -52,13 +58,15 @@ class BeamSearchAlgorithmV2:
                     if new_time > self.time_limit:
                         continue
                     
-                    # Use heuristic to score this move
-                    score = self.heuristic.calculate_connection_value(
+                    # Use heuristic with added randomness
+                    base_score = self.heuristic.calculate_connection_value(
                         connection, current_station, total_time
                     )
+                    diversity_score = random.uniform(0.95, 1.05)  # Add 5% randomness
+                    score = base_score * diversity_score
                     next_moves.append((score, dest, connection))
                 
-                # Take top K moves based on heuristic
+                # Take top K moves based on scores
                 next_moves.sort(reverse=True)  # Sort by score
                 for score, dest, connection in next_moves[:self.beam_width]:
                     new_time = total_time + connection.distance
@@ -69,11 +77,14 @@ class BeamSearchAlgorithmV2:
                     new_route.total_time = new_time
                     new_route.connections_used = current_route.connections_used | {connection}
                     
-                    # Score includes both heuristic and actual value
+                    # Enhanced scoring with multiple factors
                     route_score = (
-                        len(new_route.connections_used) * 100  # Value of connections
+                        len(new_route.connections_used) * 100  # Connection value
                         - new_route.total_time  # Time penalty
-                        + score * 10  # Heuristic future value
+                        + score * 10  # Heuristic value
+                        # Add bonus for nearby unused connections
+                        + sum(1 for conn in self.rail_network.connections 
+                            if not conn.used and dest in [conn.station1, conn.station2]) * 5
                     )
                     
                     # Update best complete route if applicable
@@ -81,9 +92,10 @@ class BeamSearchAlgorithmV2:
                         best_score = route_score
                         best_route = new_route
                     
-                    # Add to candidates for new beam
+                    # Add to candidates for new beam with small random factor
+                    priority = -route_score + random.uniform(0, 0.1)
                     new_beam.append((
-                        -route_score,  # Priority (negative for min-heap)
+                        priority,  # Priority with small random factor
                         dest,
                         path + [dest],
                         new_time,
@@ -97,8 +109,6 @@ class BeamSearchAlgorithmV2:
         return best_route
 
     def create_solution(self, max_routes: int = None) -> float:
-        # Use instance default if not specified
-        max_routes = max_routes or self.max_routes
         """
         Create a complete solution with multiple routes.
         
@@ -108,6 +118,9 @@ class BeamSearchAlgorithmV2:
         Returns:
             float: Quality score of the solution
         """
+        # Use instance default if not specified
+        max_routes = max_routes or self.max_routes
+        
         # Reset all connections
         for conn in self.rail_network.connections:
             conn.used = False
@@ -121,11 +134,14 @@ class BeamSearchAlgorithmV2:
             best_station = None
             best_score = float('-inf')
             
+            # Shuffle stations for more diversity
+            random.shuffle(all_stations)
+            
             # Try each possible starting station
             for start_station in all_stations:
                 route = self.find_route_beam(start_station)
                 if route:
-                    # Score based on connections, time, and remaining potential
+                    # Enhanced scoring for route selection
                     unused_nearby = sum(
                         1 for conn in self.rail_network.connections 
                         if not conn.used and any(
@@ -133,10 +149,12 @@ class BeamSearchAlgorithmV2:
                             for station in [conn.station1, conn.station2]
                         )
                     )
+                    
                     score = (
                         len(route.connections_used) * 100  # Connection value
                         - route.total_time  # Time penalty
                         + unused_nearby * 10  # Future potential
+                        + random.uniform(-1, 1)  # Small random factor
                     )
                     
                     if score > best_score:

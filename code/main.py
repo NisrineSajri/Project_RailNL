@@ -17,6 +17,7 @@ from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
 from algorithms.dijkstra_algorithm import DijkstraAlgorithm
 from algorithms.greedy import GreedyAlgorithm
 from algorithms.hill_climber import HillClimber
+from algorithms.bfs_heuristics_random import HeuristicRandomBFS
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
@@ -66,7 +67,7 @@ def run_visualization(self):
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
     parser.add_argument('--algorithm', type=str, 
-                      choices=['random', 'bfs', 'bfs_v2', 'beam', 'beam_v2', 'dijkstra', 'greedy', 'hill', 'all'], 
+                      choices=['random', 'bfs', 'bfs_v2', 'bfs_v3', 'beam', 'beam_v2', 'dijkstra', 'greedy', 'hill', 'all'], 
                       default='all', help='Algorithm to run (default: all)')
     parser.add_argument('--iterations', type=int, default=1000,
                       help='Number of iterations for random algorithm (default: 1000)')
@@ -89,6 +90,7 @@ def main():
             'random': RandomAlgorithm,
             'bfs': SimplifiedBFSAlgorithm,
             'bfs_v2': SimplifiedBFSAlgorithmV2,
+            'bfs_v3': HeuristicRandomBFS,
             'beam': BeamSearchAlgorithm,
             'beam_v2': BeamSearchAlgorithmV2,
             'dijkstra': DijkstraAlgorithm,
