@@ -6,7 +6,7 @@ from classes.route import Route
 from classes.heuristics import RouteHeuristics
 
 class HeuristicRandomBFS:
-    def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
+    def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 6):
         """
         Initialize HeuristicRandomBFS.
         
