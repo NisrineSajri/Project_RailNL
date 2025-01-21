@@ -42,7 +42,7 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
     else:
         best_quality, best_routes = algorithm.find_best_solution()
     
-    stats = SolutionStatistics(best_quality, best_routes)
+    stats = SolutionStatistics(best_quality, best_routes, network)
     print(f"\nResults for {algorithm_class.__name__}:")
     stats.print_stats()
 
