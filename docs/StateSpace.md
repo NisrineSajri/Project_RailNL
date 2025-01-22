@@ -31,7 +31,7 @@ Full network:
     - De functie $P(n) = N \times (B-1)^{n-1}$ kan worden geïnterpreteerd als het aantal manieren waarop een route van lengte *(n)* kan worden gevormd, waarbij:
         - N is het aantal begin stations.
         - B is de gemiddelde vertakfactor, wat het aantal mogelijke verbindingen vanaf elk station vertegenwoordigt.
-        - n is het maximaal aantal stations in een route.
+        - n is het maximaal route lengte op dat moment
 
     - Dit helpt ons mogelijke route lengtes te genereren die passen binnen het tijdsframe.
 
@@ -42,7 +42,6 @@ Full network:
 $P(n) = N \times (B-1)^{n-1}$
 - N = number of start stations (dus 22 bij Holland en 61 bij nationaal)
 - B = average branching factor is het totaal verbindingen delen door het totaal stations (dus bij Holland is dat $\frac{28}{22}$ en bij Nationaal is dat $\frac{89}{61}$)
-- n = max route length (dus bij Holland is dat 7 en Nationaal is dat 20)
 
 r = $\sum_{k=2}^{24} P(k)$ ; total single route possibilities (dus Bij holland is dat $\frac{120}{5} = 24$ en bij Nationaal is dat $\frac{180}{5}$)
   
