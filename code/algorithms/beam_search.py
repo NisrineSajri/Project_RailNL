@@ -1,7 +1,6 @@
 from typing import List, Tuple, Optional, Set
 from classes.rail_network import RailNetwork
 from classes.route import Route
-import random
 import heapq
 
 class BeamSearchAlgorithm:
@@ -13,6 +12,7 @@ class BeamSearchAlgorithm:
             rail_network: The rail network to work with
             beam_width: Number of best partial solutions to keep at each step
             time_limit: Maximum time limit for routes in minutes
+            max_routes: Maximum number of routes allowed
         """
         self.rail_network = rail_network
         self.beam_width = beam_width
@@ -21,13 +21,19 @@ class BeamSearchAlgorithm:
         
     def score_partial_route(self, route: Route) -> float:
         """
-        Score a partial route with improved heuristics.
+        Score a partial route based on unused connections.
+        
+        Args:
+            route: Route to score
+            
+        Returns:
+            float: Score based on unused connections and time efficiency
         """
-        # Base score from connections and time
+        # Base score from unused connections
         connection_value = len(route.connections_used) * 100
         time_penalty = route.total_time
         
-        # Add diversity factor based on unused connections nearby
+        # Add value for nearby unused connections
         unused_nearby = sum(
             1 for conn in self.rail_network.connections 
             if not conn.used and any(
@@ -36,19 +42,21 @@ class BeamSearchAlgorithm:
             )
         )
         
-        # Randomization factor to break ties and increase diversity
-        random_factor = random.uniform(0.95, 1.05)
-        
-        return (connection_value - time_penalty + unused_nearby * 10) * random_factor
+        return connection_value - time_penalty + unused_nearby * 10
 
     def find_route_beam(self, start_station: str) -> Optional[Route]:
         """
-        Use beam search to find a route with improved diversity.
+        Use beam search to find a route from the given station.
+        
+        Args:
+            start_station: Starting station name
+            
+        Returns:
+            Optional[Route]: Best route found, or None if no valid route exists
         """
         initial_route = Route()
         initial_route.stations = [start_station]
-        # Add random tiebreaker to initial state
-        beam = [(random.uniform(0, 0.1), start_station, [start_station], 0, {start_station}, initial_route)]
+        beam = [(0, start_station, [start_station], 0, {start_station}, initial_route)]
         best_route = None
         best_score = float('-inf')
         
@@ -58,11 +66,8 @@ class BeamSearchAlgorithm:
             for _, current_station, path, total_time, visited, current_route in beam:
                 station = self.rail_network.stations[current_station]
                 
-                # Shuffle connections to increase diversity
-                connections = list(station.connections.items())
-                random.shuffle(connections)
-                
-                for dest, connection in connections:
+                # Get all possible next connections
+                for dest, connection in station.connections.items():
                     if dest in visited:
                         continue
                         
@@ -75,7 +80,7 @@ class BeamSearchAlgorithm:
                     new_route.total_time = new_time
                     new_route.connections_used = current_route.connections_used | {connection}
                     
-                    # Score with randomization factor
+                    # Score based purely on unused connections and time
                     score = self.score_partial_route(new_route)
                     
                     if score > best_score:
@@ -83,7 +88,7 @@ class BeamSearchAlgorithm:
                         best_route = new_route
                     
                     new_beam.append((
-                        -score,  # Priority
+                        -score,  # Negative for min-heap
                         dest,
                         path + [dest],
                         new_time,
@@ -91,17 +96,12 @@ class BeamSearchAlgorithm:
                         new_route
                     ))
             
-            # Add random tiebreaker to beam selection
-            beam = []
-            for item in heapq.nsmallest(self.beam_width, new_beam):
-                priority = item[0] + random.uniform(0, 0.1)  # Small random factor
-                beam.append((priority,) + item[1:])
+            # Keep only the best beam_width candidates
+            beam = heapq.nsmallest(self.beam_width, new_beam)
         
         return best_route
 
     def create_solution(self, max_routes: int = None) -> float:
-        # Use instance default if not specified
-        max_routes = max_routes or self.max_routes
         """
         Create a complete solution with multiple routes.
         
@@ -111,6 +111,9 @@ class BeamSearchAlgorithm:
         Returns:
             float: Quality score of the solution
         """
+        # Use instance default if not specified
+        max_routes = max_routes or self.max_routes
+        
         # Reset all connections
         for conn in self.rail_network.connections:
             conn.used = False
@@ -119,13 +122,22 @@ class BeamSearchAlgorithm:
         routes_created = 0
         all_stations = list(self.rail_network.stations.keys())
         
+        # Sort stations by number of unused connections
         while routes_created < max_routes:
+            # Get stations sorted by number of unused connections
+            stations_by_connections = sorted(
+                all_stations,
+                key=lambda s: sum(1 for conn in self.rail_network.stations[s].connections.values() 
+                                if not conn.used),
+                reverse=True
+            )
+            
             best_route = None
             best_station = None
             best_score = float('-inf')
             
-            # Try each possible starting station
-            for start_station in all_stations:
+            # Try each station in order of unused connections
+            for start_station in stations_by_connections:
                 route = self.find_route_beam(start_station)
                 if route:
                     score = len(route.connections_used) * 100 - route.total_time
@@ -147,13 +159,13 @@ class BeamSearchAlgorithm:
                 all_stations.remove(best_station)
         
         return self.rail_network.calculate_quality()
-        
+
     def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
         """
-        Find the best solution by trying different beam widths.
+        Find best solution by trying different beam widths.
         
         Args:
-            iterations: Number of different beam widths to try
+            iterations: Number of beam widths to try
             
         Returns:
             Tuple[float, List[Route]]: Best quality score and corresponding routes
@@ -162,7 +174,10 @@ class BeamSearchAlgorithm:
         best_routes = []
         
         # Try different beam widths
-        for beam_width in range(2, iterations + 2):
+        min_beam = 2
+        max_beam = min(iterations + 2, len(self.rail_network.stations) // 2)
+        
+        for beam_width in range(min_beam, max_beam + 1):
             self.beam_width = beam_width
             quality = self.create_solution()
             
