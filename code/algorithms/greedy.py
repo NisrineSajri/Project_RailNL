@@ -19,16 +19,16 @@ class GreedyAlgorithm:
 
     def get_most_connections(self) -> list[Station]:
         """
-        Get a list of stations sorted by the number of connections, from most to least.
+        Get a list of stations sorted by the number of connections, from least to most.
 
         Returns:
-            list[Station]: List of stations sorted by number of connections in descending order.
+            list[Station]: List of stations sorted by number of connections in order.
         """
         # Get all stations from the network
         stations = list(self.network.stations.values())
         
-        # Sort all stations by the number of connections in descending order
-        stations.sort(key=lambda station: len(station.connections), reverse=True)
+        # Sort all stations by the number of connections in order
+        stations.sort(key=lambda station: len(station.connections), reverse=False)
         
         return stations
 
