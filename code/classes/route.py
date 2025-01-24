@@ -31,8 +31,14 @@ class Route:
         if not self.stations:
             self.stations.extend([connection.station1, connection.station2])
         else:
-            self.stations.append(connection.get_other_station(self.stations[-1]))
-        self.connections_used.add(connection)
+            last_station = self.stations[-1]
+            if last_station == connection.station1:
+                self.stations.append(connection.station2)
+            elif last_station == connection.station2:
+                self.stations.append(connection.station1)
+            else:
+                return False
+            self.connections_used.add(connection)
         connection.used = True
         return True
 
