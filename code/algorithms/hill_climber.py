@@ -76,7 +76,7 @@ class HillClimber:
             # Update the route with unique stations
             new_route.stations = unique_stations
 
-            # Ensure route has at least one valid connection
+            # Ensure route has at least two valid connection
             if len(new_route.stations) >= 2:
                 routes.append(new_route)
 
