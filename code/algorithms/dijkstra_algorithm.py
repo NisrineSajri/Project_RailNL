@@ -2,9 +2,6 @@
 
 # Bron: https://www.datacamp.com/tutorial/dijkstra-algorithm-in-python
 
-import csv
-import os
-import sys
 from heapq import heapify, heappop, heappush
 from typing import List, Tuple, Set
 from classes.rail_network import RailNetwork
@@ -24,6 +21,7 @@ class DijkstraAlgorithm:
         self.rail_network = rail_network
         self.time_limit = time_limit
         self.max_routes = max_routes
+
 
     def find_route(self, source: str, visited_connections: Set[Connection]) -> Route:
         """
@@ -69,8 +67,6 @@ class DijkstraAlgorithm:
 
             # we gaan alle bestaande connecties van current_station af
             for neighbor, connection in self.rail_network.stations[current_station].connections.items():
-                print(f"neighbor {neighbor} for current station {current_station}")
-
 
                 # als de connectie al doorlopen is, gaan we naar de volgende
                 if connection in visited_connections:
@@ -106,18 +102,13 @@ class DijkstraAlgorithm:
             path.append((previous_station, end_station, connection))
             end_station = previous_station
 
-        #### DIT NOG OPLOSSEN!
-        # we willen vanaf start naar eind station
-        print(f"PATH: {path}")
         path.reverse()
-        print(f"reversed path: {path}")
         # we voegen alle verbindingen van path toe aan de route
         for prev_station, next_station, connection in path:
-            print(f"{prev_station} -> {next_station}, connectir: {connection.station1} - {connection.station2}")
-            route.add_connection(connection)
-            print(f"connectie: {connection}!!!!!!!!!!!!!")
-        print(f"ROUTE: {route}")
+            self.add_connection_to_route(route, connection)
+
         return route
+
 
     def calculate_start_station(self, visited_connections: Set[Connection]) -> str:
         """
@@ -164,6 +155,47 @@ class DijkstraAlgorithm:
         
         # we returnen het station met de meest ondoorlopen verbindingen
         return start_station
+
+
+    def add_connection_to_route(self, route: Route, connection: Connection) -> bool:
+        """
+        Voegt de juiste verbinding toe aan de route, zolang de route binnen het tijdslimiet blijft
+        
+        Args:
+            route (Route): route waar verbinding aan wordt toegevoegd
+            connection (Connection): de verbinding die toegevoegd moet worden
+            
+        Returns:
+            bool: True als de verbinding is succesvol is toegevoegd, anders False
+        """
+        # we houden bij of tijdslimiet is overschreden
+        if route.total_time + connection.distance > route.time_limit:
+            return False
+
+        # we updaten de totale tijd
+        route.total_time += connection.distance
+
+        # als de route leeg is, voegen we beide stations toe
+        if not route.stations:
+            route.stations.extend([connection.station1, connection.station2])
+
+        else:
+            # we pakken het laatste station uit de route
+            last_station = route.stations[-1]
+
+            # we willen de goede verbinding toevoegen
+            if last_station == connection.station1:
+                route.stations.append(connection.station2)
+            elif last_station == connection.station2:
+                route.stations.append(connection.station1)
+            else:
+                return False
+
+        # we voegen de verbinding toe aan connections_used
+        route.connections_used.add(connection)
+        connection.used = True
+        return True
+
 
     def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
         """
