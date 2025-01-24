@@ -182,12 +182,21 @@ class DijkstraAlgorithm:
         else:
             # we pakken het laatste station uit de route
             last_station = route.stations[-1]
-
             # we willen de goede verbinding toevoegen
             if last_station == connection.station1:
                 route.stations.append(connection.station2)
             elif last_station == connection.station2:
                 route.stations.append(connection.station1)
+
+            # als de eerste connectie verkeerd om is geplaatst, draaien we de connectie om
+            elif len(route.stations) == 2:
+                first_station = route.stations[0]
+                if first_station == connection.station1:
+                    route.stations[0], route.stations[-1] = route.stations[-1], route.stations[0]
+                    route.stations.append(connection.station2)
+                elif first_station == connection.station2:
+                    route.stations[0], route.stations[-1] = route.stations[-1], route.stations[0]
+                    route.stations.append(connection.station1)
             else:
                 return False
 
