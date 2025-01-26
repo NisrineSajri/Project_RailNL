@@ -8,18 +8,23 @@ from .route import Route
 class RailNetwork:
     def __init__(self):
         """
-        Initialize a RailNetwork object.
+        Initialiseer een RailNetwork object.
         """
-        self.stations: Dict[str, Station] = {}
-        self.connections: List[Connection] = []
-        self.routes: List[Route] = []
+        # Opslag voor stations
+        self.stations: Dict[str, Station] = {} 
+        
+        # Opslag voor verbindingen 
+        self.connections: List[Connection] = []  
+        
+        # Opslag voor routes
+        self.routes: List[Route] = []  
 
     def load_stations(self, filename: str):
         """
-        Load stations from a CSV file.
-        
+        Laad stations uit een CSV-bestand.
+
         Args:
-            filename (str): Path to the CSV file containing station data
+            filename (str): Pad naar het CSV-bestand met stationgegevens
         """
         with open(filename, 'r') as file:
             reader = csv.DictReader(file)
@@ -29,10 +34,10 @@ class RailNetwork:
 
     def load_connections(self, filename: str):
         """
-        Load connections from a CSV file.
-        
+        Laad verbindingen uit een CSV-bestand.
+
         Args:
-            filename (str): Path to the CSV file containing connection data
+            filename (str): Pad naar het CSV-bestand met verbindingsgegevens
         """
         with open(filename, 'r') as file:
             reader = csv.DictReader(file)
@@ -48,10 +53,10 @@ class RailNetwork:
 
     def get_used_connections(self) -> Set[Connection]:
         """
-        Get set of all unique connections used across all routes.
-        
-        Returns:
-            Set[Connection]: Set of unique connections that are used
+        Verkrijg de set van alle unieke verbindingen die in de routes worden gebruikt.
+
+        Return:
+            Set[Connection]: Set van unieke verbindingen die worden gebruikt
         """
         used_connections = set()
         for route in self.routes:
@@ -60,14 +65,14 @@ class RailNetwork:
 
     def calculate_quality(self) -> float:
         """
-        Calculate the quality score of the current solution using unique connections.
-        
-        Returns:
-            float: Quality score based on the formula K = p * 10000 - (T * 100 + Min)
-            where:
-            - p is the proportion of connections used
-            - T is the number of routes
-            - Min is the total time of all routes
+        Bereken de kwaliteitscore van de huidige oplossing op basis van unieke verbindingen.
+
+        Return:
+            float: Kwaliteitsscore op basis van de formule K = p * 10000 - (T * 100 + Min)
+            Waarbij:
+            - p de proportie van gebruikte verbindingen is
+            - T het aantal routes is
+            - Min de totale tijd van alle routes is
         """
         total_connections = len(self.connections)
         used_connections = len(self.get_used_connections())
@@ -80,27 +85,27 @@ class RailNetwork:
 
     def sync_connection_states(self):
         """
-        Synchronize connection.used flags with route.connections_used sets.
-        Ensures that the connection.used flags match what's actually used in routes.
+        Synchroniseer de `used` status van verbindingen met de gebruikte verbindingen in de routes.
+        Zorgt ervoor dat de 'used' vlaggen overeenkomen met wat daadwerkelijk in de routes wordt gebruikt.
         """
-        # First reset all connections
+        # Reset eerst alle verbindingen
         for conn in self.connections:
             conn.used = False
             
-        # Then mark used connections based on routes
+        # Markeer daarna de gebruikte verbindingen
         used_conns = self.get_used_connections()
         for conn in used_conns:
             conn.used = True
 
     def create_route(self, start_station: str) -> Route:
         """
-        Create a single route starting from the given station.
-        
+        Maak een enkele route die begint bij het opgegeven station.
+
         Args:
-            start_station (str): Name of the starting station
-            
-        Returns:
-            Route: Created route object
+            start_station (str): Naam van het startstation
+
+        Return:
+            Route: Gecreëerd route-object
         """
         route = Route()
         current_station = start_station
@@ -127,7 +132,7 @@ class RailNetwork:
 
     def reset(self):
         """
-        Reset the network state by clearing all routes and connection usage.
+        Reset het netwerk door alle routes en verbindinggebruik te wissen.
         """
         self.routes.clear()
         for conn in self.connections:

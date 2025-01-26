@@ -2,12 +2,12 @@ from typing import List, Set
 from .connection import Connection
 
 class Route:
-    def __init__(self, time_limit: int = 180):  # Default to largest time limit
+    def __init__(self, time_limit: int = 180):  # Standaard naar de grootste tijdslimiet
         """
-        Initialize a Route object.
+        Initialiseer een Route object.
         
         Args:
-            time_limit: Maximum time limit for the route in minutes
+            time_limit: Maximale tijdslimiet voor de route in minuten
         """
         self.stations: List[str] = []
         self.total_time = 0
@@ -16,13 +16,13 @@ class Route:
 
     def add_connection(self, connection: Connection) -> bool:
         """
-        Add a connection to the route if it doesn't exceed the time limit.
+        Voeg een verbinding toe aan de route als deze de tijdslimiet niet overschrijdt.
         
         Args:
-            connection (Connection): Connection to add to the route
+            connection (Connection): Verbinding die aan de route moet worden toegevoegd
             
-        Returns:
-            bool: True if connection was added successfully, False otherwise
+        Retourneert:
+            bool: True als de verbinding succesvol werd toegevoegd, False anders
         """
         if self.total_time + connection.distance > self.time_limit:
             return False
@@ -38,9 +38,9 @@ class Route:
 
     def __str__(self) -> str:
         """
-        String representation of the Route.
+        String representatie van de Route.
         
-        Returns:
-            str: String describing the route
+        Retourneert:
+            str: Een string die de route beschrijft
         """
         return f"Route({' -> '.join(self.stations)}, {self.total_time} min)"

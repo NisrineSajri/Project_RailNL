@@ -1,12 +1,12 @@
 import os
 
-# Get the absolute path to the project root directory
+# Verkrijg het absolute pad naar de hoofdmap van het project
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Define paths
+# Definieer paden
 DATA_DIR = os.path.join(ROOT_DIR, "data")
 
-# Dataset configurations
+# Dataset configuraties
 HOLLAND_CONFIG = {
     'stations_file': os.path.join(DATA_DIR, "StationsHolland.csv"),
     'connections_file': os.path.join(DATA_DIR, "ConnectiesHolland.csv"),

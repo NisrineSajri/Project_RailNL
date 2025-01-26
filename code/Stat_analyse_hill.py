@@ -8,11 +8,17 @@ def run_multiple_times(network: RailNetwork, iterations: int, runs: int, output_
     Voer het HillClimber-algoritme meerdere keren uit, sla de resultaten op in een CSV-bestand en genereer een staafdiagram.
     
     Args:
-        network (RailNetwork): Het spoornetwerk om mee te werken.
+        network (RailNetwork): Het spoornetwerk waarop de HillClimber werkt.
         iterations (int): Aantal iteraties per HillClimber-run.
         runs (int): Aantal keren dat het algoritme wordt uitgevoerd.
         output_file (str): Bestandsnaam voor de CSV-uitvoer.
         plot_file (str): Bestandsnaam voor de afbeelding van het diagram.
+    
+    Returns:
+        None: De functie slaat resultaten op en genereert een plot, maar geeft geen waarde terug.
+    
+    Samenvatting:
+        Voert de HillClimber meerdere keren uit, slaat de quality scores op in een CSV en genereert een plot.
     """
     quality_scores = []
 
@@ -23,7 +29,7 @@ def run_multiple_times(network: RailNetwork, iterations: int, runs: int, output_
         quality_scores.append(quality)
         print(f"Run {run + 1}/{runs} completed with quality score: {quality}")
 
-   # Sla de resultaten op in een CSV-bestand
+    # Sla de resultaten op in een CSV-bestand
     with open(output_file, mode="w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Run", "Quality Score"])
@@ -54,6 +60,9 @@ def load_network(stations_file: str, connections_file: str) -> RailNetwork:
     
     Returns:
         RailNetwork: Een geladen RailNetwork-object.
+    
+    Samenvatting:
+        Laadt een RailNetwork met de opgegeven station- en verbindingenbestanden.
     """
     network = RailNetwork()
     network.load_stations(stations_file)
