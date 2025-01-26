@@ -18,6 +18,7 @@ from algorithms.dijkstra_algorithm import DijkstraAlgorithm
 from algorithms.greedy import GreedyAlgorithm
 from algorithms.hill_climber import HillClimber
 from algorithms.beam_search_v3 import HeuristicRandomBFS
+from algorithms.a_star_algorithm import AStarAlgorithm
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
@@ -50,7 +51,7 @@ def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iteration
 def main():
     parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
     parser.add_argument('--algorithm', type=str, 
-                      choices=['random', 'bfs', 'bfs_v2', 'beam', 'beam_v2', 'beam_v3', 'dijkstra', 'greedy', 'hill', 'all'], 
+                      choices=['random', 'bfs', 'bfs_v2', 'beam', 'beam_v2', 'beam_v3', 'dijkstra', 'a_star', 'greedy', 'hill', 'all'], 
                       default='all', help='Algorithm to run (default: all)')
     parser.add_argument('--iterations', type=int, default=1000,
                       help='Number of iterations for random algorithm (default: 1000)')
@@ -77,6 +78,7 @@ def main():
             'beam_v2': BeamSearchAlgorithmV2,
             'beam_v3': HeuristicRandomBFS,
             'dijkstra': DijkstraAlgorithm,
+            'a_star':AStarAlgorithm,
             'greedy': GreedyAlgorithm,
             'hill': HillClimber
         }

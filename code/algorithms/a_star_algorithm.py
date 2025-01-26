@@ -1,6 +1,4 @@
-# dijkstra_algorithm.py
-
-# Bron: https://www.datacamp.com/tutorial/dijkstra-algorithm-in-python
+# a_star_algorithm.py
 
 from heapq import heapify, heappop, heappush
 from typing import List, Tuple, Set
@@ -8,20 +6,18 @@ from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.connection import Connection
 
-class DijkstraAlgorithm:
+class AStarAlgorithm:
     def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialiseert DijkstraAlgorithm
+        Initialiseert AStarAlgorithm
         Args:
             rail_network: rail network
             time_limit: maximale tijdsduur van trajecten
             max_routes: maximaal aantal routes
         """
-        # rail network zien we als een graaf met de stations als nodes en de verbindingen als edges
         self.rail_network = rail_network
         self.time_limit = time_limit
         self.max_routes = max_routes
-
 
     def find_route(self, source: str, visited_connections: Set[Connection]) -> Route:
         """
@@ -112,7 +108,8 @@ class DijkstraAlgorithm:
 
     def calculate_start_station(self, visited_connections: Set[Connection]) -> str:
         """
-        Kiest als startstation het station met de meeste ondoorlopen connecties.
+        Kiest als start station eerst de stations die maar één connectie hebben.
+        Daarna kiest als startstation het station met de minste ondoorlopen connecties.
         
         Args:
             visited_connections: Set met doorlopen connecties
@@ -143,19 +140,23 @@ class DijkstraAlgorithm:
         # als de dictionary leeg is, returnen we None
         if not start_stations:
             return None
-        
-        # we zoeken naar het station met de meeste ondoorlopen verbndingen
-        max_connections = 0
+
+        # We zoeken naar stations met 1 connectie
+        for station, connection_count in start_stations.items():
+            if connection_count == 1:
+                return station
+                
+        # als geen station maar één connectie heeft, zoeken we naar station met de minste connecties
+        min_connections = 0
         start_station = None
         
         for station, connection_count in start_stations.items():
-            if connection_count > max_connections:
-                max_connections = connection_count
+            if connection_count < min_connections:
+                min_connections = connection_count
                 start_station = station
         
         # we returnen het station met de meest ondoorlopen verbindingen
         return start_station
-
 
     def add_connection_to_route(self, route: Route, connection: Connection) -> bool:
         """
@@ -204,7 +205,6 @@ class DijkstraAlgorithm:
         route.connections_used.add(connection)
         connection.used = True
         return True
-
 
     def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
         """
