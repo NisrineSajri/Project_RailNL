@@ -7,105 +7,130 @@ from classes.station import Station
 class GreedyAlgorithm:
     def __init__(self, network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialize the Greedy class.
+        Initialiseer de Greedy-algoritmeklasse.
+        
         Args:
-            network: The rail network to work with
-            time_limit: Maximum time limit for routes in minutes
-            max_routes: Maximum number of routes allowed
+            network (RailNetwork): Het railnetwerk waarmee gewerkt wordt.
+            time_limit (int, default 120): Maximale tijdslimiet voor routes in minuten.
+            max_routes (int, default 7): Maximale aantal routes.
         """
-        self.network = network  # Bind the network to the Greedy class
-        self.max_routes = max_routes  # Use the max_routes from config
-        self.max_time = time_limit  # Use the time limit from config
+        # Bind het netwerk aan de Greedy-algoritmeklasse
+        self.network = network  
+        
+        # Gebruik het maximale aantal routes
+        self.max_routes = max_routes 
+        
+        # Gebruik de tijdslimiet
+        self.max_time = time_limit  
 
-    def get_most_connections(self) -> list[Station]:
+    def get_most_connections(self) -> List[Station]:
         """
-        Get a list of stations sorted by the number of connections, from least to most.
-
+        Verkrijg een lijst van stations gesorteerd op het aantal verbindingen, van de minste naar de meeste.
+        
         Returns:
-            list[Station]: List of stations sorted by number of connections in order.
+            List[Station]: Lijst van stations gesorteerd op het aantal verbindingen.
         """
-        # Get all stations from the network
+        # Verkrijg alle stations uit het netwerk
         stations = list(self.network.stations.values())
         
-        # Sort all stations by the number of connections in order
+        # Sorteer stations op basis van het aantal verbindingen in oplopende volgorde
         stations.sort(key=lambda station: len(station.connections), reverse=False)
         
         return stations
 
     def create_route(self, start_station: Station) -> Route:
-        """Creates a single route starting from the given station."""
-        route = Route(time_limit=self.max_time)  # Pass the time limit
+        """
+        Maak een enkele route die begint bij het opgegeven station.
+        
+        Args:
+            start_station (Station): Het station waarmee de route begint.
+        
+        Returns:
+            Route: De gemaakte route.
+        """
+        # Geef de tijdslimiet door
+        route = Route(time_limit=self.max_time)
         current_station = start_station.name
-        visited_stations = set()  # Keep track of stations visited in this route
+
+        # Houd bij welke stations al bezocht zijn in deze route
+        visited_stations = set()  
 
         while True:
             station = self.network.stations[current_station]
-            visited_stations.add(current_station)  # Mark the station as visited
 
-            # Get all valid connections that:
-            # 1. Have not been used.
-            # 2. Do not exceed the max time.
-            # 3. Lead to stations not already visited in this route.
+            # Markeer het station als bezocht
+            visited_stations.add(current_station)  
+
+            # Verkrijg alle geldige verbindingen die:
+            # 1. Nog niet gebruikt zijn.
+            # 2. De maximale tijdslimiet niet overschrijden.
+            # 3. Naar stations leiden die nog niet bezocht zijn in deze route.
             for _, conn in station.connections.items():
                 if not conn.used and route.total_time + conn.distance <= self.max_time:
                     other_station = conn.get_other_station(current_station)
                     if other_station not in visited_stations:
-                        # Directly add the unused connection to the route
+                        # Voeg de ongebruikte verbinding direct toe aan de route
                         if route.add_connection(conn):
-                            # If the connection is successfully added, update the current station
+                            # Als verbinding succesvol is toegevoegd, werk huidige station bij
                             current_station = other_station
-                            break  # Move on to the next connection after adding
+                            # Ga verder met de volgende verbinding na toevoeging
+                            break  
             else:
-                # If no valid connection is found, end the route
+                # Geen geldige verbindingen gevonden; eindig de route
                 break
 
         return route
 
-
-    def runGreedy(self):
+    def runGreedy(self) -> float:
         """
-        Run the greedy algorithm to create routes using a sorted list of stations.
+        Voer het greedy-algoritme uit om routes te creëren op basis van een gesorteerde lijst van stations.
+        
+        Returns:
+            float: De kwaliteit van de gemaakte routes, berekend door de functie `calculate_quality` van het netwerk.
         """
-        # Reset all connections om mijn connecties te selecteren
+        # Reset alle verbindingen om mijn connecties te selecteren
         for conn in self.network.connections:
             conn.used = False
         self.network.routes.clear()
 
-        # Get the sorted list of stations by number of connections
+        # Verkrijg de gesorteerde lijst van stations op basis van het aantal verbindingen
         sorted_stations = self.get_most_connections()
-        used_stations = set()  # Track stations already used as starting points 
+
+        # Houd bij welke stations al als startpunt zijn gebruikt
+        used_stations = set()  
 
         for start_station in sorted_stations:
-            # Check if the station has available connections
+            # Controleer of het station beschikbare verbindingen heeft
             if start_station.name in used_stations:
-                continue  # Skip this station if it has already been used as a starting point
+                # Sla station over als het al als startpunt is gebruikt
+                continue  
 
-            # Mark the station as used
+            # Markeer het station als gebruikt
             used_stations.add(start_station.name)
 
-            # Create a route starting from the current station
+            # Maak een route die begint bij het huidige station
             route = self.create_route(start_station)
 
-            # Add the route to the network if it contains connections
+            # Voeg de route toe aan het netwerk als het verbindingen bevat
             if route.connections_used:
                 self.network.routes.append(route)
 
-            # Check if the maximum number of routes has been reached
+            # Controleer of het maximale aantal routes bereikt is
             if len(self.network.routes) >= self.max_routes:
                 break
 
-        # Calculate and return quality
+        # Bereken en retourneer de kwaliteit van de gemaakte routes
         return self.network.calculate_quality()
 
     def find_best_solution(self, iterations: int = 1) -> Tuple[float, List[Route]]:
         """
-        Find best solution (single iteration since deterministic).
+        Vind de beste oplossing (enkele iteratie, aangezien het deterministisch is).
         
         Args:
-            iterations: Kept for API compatibility
-            
+            iterations (int, default 1): Het aantal iteraties voor de berekening (wordt hier niet gebruikt, omdat het algoritme deterministisch is).
+        
         Returns:
-            Tuple[float, List[Route]]: Quality score and corresponding routes
+            Tuple[float, List[Route]]: Een tuple met de kwaliteitsscore en de bijbehorende lijst van routes.
         """
         quality = self.runGreedy()
         best_routes = [Route() for _ in self.network.routes]

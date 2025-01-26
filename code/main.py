@@ -3,7 +3,7 @@ from typing import List, Type
 import os
 import sys
 
-# Add the parent directory to Python path
+# Voeg de bovenliggende directory toe aan de Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 
@@ -23,22 +23,22 @@ from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
 def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
     """
-    Run the specified algorithm and print its results.
+    Voer het opgegeven algoritme uit en druk de resultaten af.
     
-    Args:
-        algorithm_class: Class of the algorithm to run
-        network: RailNetwork instance
-        config: Configuration dictionary containing max_routes and time_limit
-        iterations: Number of iterations (only used for RandomAlgorithm)
+    Argumenten:
+        algorithm_class: Klasse van het algoritme om uit te voeren
+        network: RailNetwork instantie
+        config: Configuratie dictionary met max_routes en time_limit
+        iterations: Aantal iteraties (alleen gebruikt voor RandomAlgorithm)
     """
-    # Initialize algorithm with dataset-specific parameters
+    # Initialiseer het algoritme met dataset-specifieke parameters
     algorithm = algorithm_class(
         network, 
         time_limit=config['time_limit'], 
         max_routes=config['max_routes']
     )
     
-    # Only use iterations for RandomAlgorithm
+    # Gebruik alleen iteraties voor RandomAlgorithm
     if isinstance(algorithm, RandomAlgorithm):
         best_quality, best_routes = algorithm.find_best_solution(iterations=iterations or 1000)
     else:
@@ -61,15 +61,15 @@ def main():
     args = parser.parse_args()
     
     try:
-        # Select configuration based on dataset
+        # Selecteer configuratie op basis van dataset
         config = HOLLAND_CONFIG if args.dataset == 'holland' else NATIONAL_CONFIG
         
-        # Initialize network
+        # Initialiseer netwerk
         network = RailNetwork()
         network.load_stations(config['stations_file'])
         network.load_connections(config['connections_file'])
         
-        # Define algorithm mapping
+        # Initialiseer netwerk
         algorithms = {
             'random': RandomAlgorithm,
             'bfs': SimplifiedBFSAlgorithm,
@@ -84,7 +84,7 @@ def main():
         }
         
         if args.algorithm == 'all':
-            # Run all algorithms
+            # Voer alle algoritmen uit
             for algo_name, algo_class in algorithms.items():
                 if algo_name == 'random':
                     iterations = args.iterations
@@ -92,7 +92,7 @@ def main():
                     iterations = None
                 run_algorithm(algo_class, network, config, iterations)
         else:
-            # Run specific algorithm
+            # Voer specifiek algoritme uit
             algo_class = algorithms[args.algorithm]
             if args.algorithm == 'random':
                 iterations = args.iterations

@@ -20,10 +20,10 @@ def analyze_random_solutions(config: dict, iterations: int = 1000, seed: int = 4
     Returns:
         Tuple[List[float], dict]: List of scores and dictionary with statistics
     """
-    # Set random seed for reproducibility
+    # Zet de random seed voor reproduceerbaarheid
     np.random.seed(seed)
     
-    # Initialize network and algorithm
+    # Initialiseer netwerk en algoritme
     network = RailNetwork()
     network.load_stations(config['stations_file'])
     network.load_connections(config['connections_file'])
@@ -34,7 +34,7 @@ def analyze_random_solutions(config: dict, iterations: int = 1000, seed: int = 4
         max_routes=config['max_routes']
     )
     
-    # Collect scores
+    # Verzamel scores
     scores = []
     route_counts = defaultdict(int)
     connection_counts = defaultdict(int)
@@ -43,12 +43,12 @@ def analyze_random_solutions(config: dict, iterations: int = 1000, seed: int = 4
         quality = algorithm.create_solution(max_routes=config['max_routes'])
         scores.append(quality)
         
-        # Track statistics about the solution
+        # Volg statistieken over de oplossing
         route_counts[len(network.routes)] += 1
         total_connections = sum(1 for conn in network.connections if conn.used)
         connection_counts[total_connections] += 1
     
-    # Calculate statistics
+    # Bereken statistieken
     stats = {
         'mean': np.mean(scores),
         'std': np.std(scores),
@@ -74,7 +74,7 @@ def plot_results(scores: List[float], stats: dict, dataset: str, save_path: str 
     """
     plt.figure(figsize=(15, 15))
     
-    # Plot 1: Score progression
+    # Plot 1: Score progressie
     plt.subplot(3, 1, 1)
     plt.plot(range(len(scores)), scores, alpha=0.7, color='#0B2447')
     plt.axhline(stats['mean'], color='#ff4444', linestyle='--', 
@@ -84,7 +84,7 @@ def plot_results(scores: List[float], stats: dict, dataset: str, save_path: str 
     plt.ylabel('Quality Score')
     plt.legend()
     
-    # Plot 2: Distribution of scores
+    # Plot 2: Verdeling van scores
     plt.subplot(3, 1, 2)
     sns.histplot(scores, kde=True, color='#0B2447', bins=30)
     plt.axvline(stats['mean'], color='#ff4444', linestyle='--', 
@@ -94,7 +94,7 @@ def plot_results(scores: List[float], stats: dict, dataset: str, save_path: str 
     plt.ylabel('Count')
     plt.legend()
     
-    # Plot 3: Route count distribution
+    # Plot 3: Verdeling van route aantallen
     plt.subplot(3, 1, 3)
     route_counts = stats['route_distribution']
     plt.bar(route_counts.keys(), route_counts.values(), color='#0B2447', alpha=0.7)
@@ -122,13 +122,13 @@ def main():
     
     args = parser.parse_args()
     
-    # Select configuration based on dataset
+    # Selecteer de configuratie op basis van de dataset
     config = HOLLAND_CONFIG if args.dataset == 'holland' else NATIONAL_CONFIG
     
-    # Run analysis
+    # Voer de analyse uit
     scores, stats = analyze_random_solutions(config, iterations=args.iterations, seed=args.seed)
     
-    # Print statistics
+    # Print statistieken
     print(f"\nRandom Algorithm Statistics - {args.dataset.upper()} Dataset:")
     print(f"Number of iterations: {args.iterations}")
     print(f"Time limit per route: {config['time_limit']} minutes")
@@ -140,7 +140,7 @@ def main():
     print(f"Average number of routes: {stats['avg_routes']:.2f}")
     print(f"Average connections used: {stats['avg_connections']:.2f}")
     
-    # Create visualization
+    # Maak visualisatie
     plot_results(scores, stats, args.dataset, 
                 save_path=f"baseline_analysis_{args.dataset}.png")
 
