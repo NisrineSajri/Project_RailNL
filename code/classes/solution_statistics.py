@@ -27,8 +27,8 @@ class SolutionStatistics:
         self.routes = routes
         self.network = network
         self.total_time = sum(route.total_time for route in routes) if routes else 0
-        self.total_connections = sum(len(route.connections_used) for route in routes) if routes else 0
-        
+        self.total_connections = (len(set(conn for route in routes for conn in route.connections_used)) if routes else 0)
+
     def print_stats(self):
         """Print comprehensive statistics about the solution"""
         if not self.routes:
