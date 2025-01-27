@@ -238,10 +238,62 @@ class AStarAlgorithm:
             routes.append(route)
             visited_connections.update(route.connections_used)
 
+        routes = self.combine_routes(routes)
+
         # update rail_network met de routes
         self.rail_network.routes = routes
-        
         # we berekenen de kwaliteit (K)
         quality = self.rail_network.calculate_quality()
 
         return quality, routes
+        
+    def combine_routes(self, routes: List[Route]) -> List[Route]:
+        """
+        Combineert routes als dit mogelijk is
+
+        Args:
+            List[Route]: List met alle berekende routes
+            
+        Returns:
+            List[Route]: de List met de (gecombineerde) routes
+        """
+        if not routes:
+            return routes
+            
+        i = 0
+        while i < len(routes) - 1:
+            route1 = routes[i]
+            route2 = routes[i + 1]
+            
+            # We kijken of deze routes samen de tijd al overschreiden
+            if route1.total_time + route2.total_time >= self.time_limit:
+                i += 1
+                continue
+            
+            # we pakken het laatste station van route 1 en het eerste station van route 2
+            end_station = route1.stations[-1]
+            start_station = route2.stations[0]
+            
+            # We kijken of deze twee station gecombineert kunnen worden
+            connection = self.rail_network.stations[end_station].connections.get(start_station)
+            
+            # als de connectie bestaat en dit totale traject niet het tijdslimiet overschreidt
+            if (connection and route1.total_time + route2.total_time + connection.distance <= self.time_limit):
+                
+                # we creëren en updaten alles van deze nieuwe route
+                combined_route = Route(self.time_limit)
+                combined_route.stations = route1.stations + route2.stations
+                combined_route.connections_used = route1.connections_used | route2.connections_used
+                combined_route.connections_used.add(connection)
+                combined_route.total_time = route1.total_time + route2.total_time + connection.distance
+                
+                # we vervangen routes[i] door de gecombineerde route, en we verwijderen routes[i+1] uit routes
+                routes[i] = combined_route
+                routes.pop(i + 1)
+            
+            # als we geen connectie hebben gevonden om deze trajecten te verbinden
+            else:
+                i += 1
+                
+        return routes
+    
