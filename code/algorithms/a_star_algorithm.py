@@ -255,7 +255,7 @@ class AStarAlgorithm:
             List[Route]: List met alle berekende routes
             
         Returns:
-            List[Route]: de List met de gecombineerde (als mogelijk) routes
+            List[Route]: de List met de (gecombineerde) routes
         """
         if not routes:
             return routes
