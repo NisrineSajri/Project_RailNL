@@ -1,4 +1,3 @@
-# greedy.py
 from typing import List, Tuple
 from classes.rail_network import RailNetwork
 from classes.route import Route
@@ -78,7 +77,7 @@ class GreedyAlgorithm:
             else:
                 # Geen geldige verbindingen gevonden; eindig de route
                 break
-
+            
         return route
 
     def runGreedy(self) -> float:
@@ -111,8 +110,8 @@ class GreedyAlgorithm:
             # Maak een route die begint bij het huidige station
             route = self.create_route(start_station)
 
-            # Voeg de route toe aan het netwerk als het verbindingen bevat
-            if route.connections_used:
+            # Voeg de route toe aan het netwerk alleen als deze meer dan 2 stations bevat
+            if route.connections_used and len(route.stations) > 2:
                 self.network.routes.append(route)
 
             # Controleer of het maximale aantal routes bereikt is
