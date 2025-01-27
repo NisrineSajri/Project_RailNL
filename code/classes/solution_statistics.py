@@ -6,7 +6,7 @@ import pandas as pd
 import folium
 import matplotlib.pyplot as plt
 
-# Add the parent directory to Python path
+# Voeg de bovenliggende map toe aan het Python-pad
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
@@ -16,12 +16,12 @@ from classes.route import Route
 class SolutionStatistics:
     def __init__(self, quality: float, routes: List[Route], network=None, *args):
         """
-        Initialize SolutionStatistics with quality score and routes.
+        Initialiseer SolutionStatistics met een kwaliteitscore en routes.
         
         Args:
-            quality (float): Quality score of the solution
-            routes (List[Route]): List of routes in the solution
-            network: The rail network being used
+            quality (float): De kwaliteitscore van de oplossing.
+            routes (List[Route]): Een lijst van routes in de oplossing.
+            network: Het spoorwegnetwerk dat wordt gebruikt.
         """
         self.quality = quality
         self.routes = routes
@@ -30,7 +30,9 @@ class SolutionStatistics:
         self.total_connections = sum(len(route.connections_used) for route in routes) if routes else 0
         
     def print_stats(self):
-        """Print comprehensive statistics about the solution"""
+        """
+        Print uitgebreide statistieken over de oplossing.
+        """
         if not self.routes:
             print("\nNo valid routes found!")
             return
@@ -55,11 +57,11 @@ class SolutionStatistics:
             
     def get_summary(self) -> dict:
         """
-        Get a dictionary containing summary statistics.
+        Verkrijg een samenvatting van de oplossing in dictionaryvorm.
         
         Returns:
-            dict: Summary statistics including quality, number of routes,
-                 total time, and total connections
+            dict: Samenvatting van statistieken, inclusief kwaliteit, aantal routes, 
+                  totale tijd en aantal verbindingen.
         """
         return {
             'quality': self.quality,
@@ -70,33 +72,34 @@ class SolutionStatistics:
         
     def get_coverage_percentage(self) -> float:
         """
-        Calculate the percentage of total possible connections that are used.
+        Bereken het percentage van de totale mogelijke verbindingen dat wordt gebruikt.
         
         Returns:
-            float: Percentage of connections covered
+            float: Percentage van gebruikte verbindingen.
         """
         if not self.routes or not self.routes[0].connections_used or not self.network:
             return 0.0
             
-        # Get all unique connections from any route
+        # Verkrijg alle unieke verbindingen van een route
         used_connections = set()
         for route in self.routes:
             used_connections.update(route.connections_used)
             
-        # Get total possible connections from the network
+        # Verkrijg het totaal aantal mogelijke verbindingen van het netwerk
         total_possible = len(self.network.connections)
         
         return (len(used_connections) / total_possible) * 100 if total_possible > 0 else 0.0
         
     def compare_with(self, other: 'SolutionStatistics') -> dict:
         """
-        Compare this solution with another solution.
+        Vergelijk deze oplossing met een andere oplossing.
         
         Args:
-            other (SolutionStatistics): Another solution to compare with
+            other (SolutionStatistics): Een andere oplossing om mee te vergelijken.
             
         Returns:
-            dict: Dictionary containing differences in key metrics
+            dict: Verschillen in sleutelstatistieken zoals kwaliteit, aantal routes,
+                  totale tijd en aantal verbindingen.
         """
         return {
             'quality_diff': self.quality - other.quality,
@@ -106,14 +109,17 @@ class SolutionStatistics:
         }
     
     def visualisation_algorithms(self):
-        # Create visualization directory if it doesn't exist
+        """
+        Genereer een visualisatie van de routes en sla deze op als een HTML-bestand.
+        """
+        # Maak een visualisatiemap als deze nog niet bestaat
         os.makedirs('visualization', exist_ok=True)
         
-        # We slaan de routes van het algoritme dat we runnen via main op in routes.csv
+        # Sla de routes van het algoritme dat via main wordt uitgevoerd op in routes.csv
         with open('visualization/routes.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             for route in self.routes:
-                # we willen geen dubbele stations op één rij
+                # We willen geen dubbele stations op één rij
                 route_unique = []
                 previous_station = None
                 for station in route.stations:
@@ -121,10 +127,10 @@ class SolutionStatistics:
                         route_unique.append(station)
                     previous_station = station
 
-                # we hebben nu alle routes zonder dubbele stations
+                # Nu hebben we alle routes zonder dubbele stations
                 writer.writerow(route_unique)
 
-        # We maken een dictionary met de coördinaten van elk station gekoppeld aan het bijbehorende station
+        # Maak een dictionary met coördinaten van elk station gekoppeld aan het station
         stations = pd.read_csv('../data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
         station_coordinate = {}
         for index, row in stations.iterrows():
@@ -133,10 +139,10 @@ class SolutionStatistics:
             x_coordinate = row['x']
             station_coordinate[station] = {'y': y_coordinate, 'x': x_coordinate}
 
-        # We creëren een kaart gezoomed op Nederland
+        # Creëer een kaart ingezoomd op Nederland
         m = folium.Map(location=[52.1326, 4.2913], zoom_start=7)
         for station, coordinate in station_coordinate.items():
-            # We kijken elk station in één van de routes zit, en plaatsen hier een marker
+            # Controleer of elk station in een van de routes zit, en plaats een marker
             if any(station in route.stations for route in self.routes):
                 folium.Marker(
                     location=[coordinate['y'], coordinate['x']],
@@ -144,32 +150,16 @@ class SolutionStatistics:
                 ).add_to(m)
 
         colors = [
-            "red",
-            "green",
-            "yellow",
-            "blue", 
-            "orange",
-            "purple",
-            "cyan",
-            "magenta",
-            "lime",
-            "darkblue",
-            "teal",
-            "gold",
-            "pink",
-            "darkred",
-            "violet",
-            "olive",
-            "indigo",
-            "salmon",
-            "turquoise",
-            "plum"
+            "red", "green", "yellow", "blue", "orange", "purple",
+            "cyan", "magenta", "lime", "darkblue", "teal", "gold",
+            "pink", "darkred", "violet", "olive", "indigo", "salmon",
+            "turquoise", "plum"
         ]
 
-        # We gebruiken een color index voor de verschillende kleuren
+        # Gebruik een kleurindex voor verschillende kleuren
         color_index = 0  
 
-        # We gaan elke berekende route door
+        # Doorloop elke berekende route
         for route in self.routes:
             route_unique = []
             previous_station = None
@@ -181,23 +171,24 @@ class SolutionStatistics:
             route_description = f"Route {color_index + 1}:\n" + " -> ".join(route_unique)
 
             for i in range(len(route.stations) - 1):
-                # We definiëren de start en eind-stations uit de lijst met routes
+                # Definieer de start- en eindstations uit de lijst met routes
                 station1 = route.stations[i]
                 station2 = route.stations[i + 1]
 
                 if station1 in station_coordinate and station2 in station_coordinate:
-                # We verbinden de start en eind-stations met elkaar met lijnen
+                    # Verbind de start- en eindstations met lijnen
                     folium.PolyLine(
                         locations=[
                             [station_coordinate[station1]['y'], station_coordinate[station1]['x']],
                             [station_coordinate[station2]['y'], station_coordinate[station2]['x']]
-                        ], color = colors[color_index],
-                        opacity = 0.8,
-                        weight = 5,
-                        popup = folium.Popup(route_description, max_width=200)
+                        ],
+                        color=colors[color_index],
+                        opacity=0.8,
+                        weight=5,
+                        popup=folium.Popup(route_description, max_width=200)
                     ).add_to(m)
-            # Zodat elke route een andere kleur heeft
-            color_index = color_index + 1
+            # Zorg ervoor dat elke route een andere kleur heeft
+            color_index += 1
         
-        # We slaan het bestand op in de visualization map
+        # Sla het bestand op in de visualisatiemap
         m.save("visualization/visualization_algorithms.html")
