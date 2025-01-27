@@ -5,11 +5,11 @@ from classes.connection import Connection
 class RouteHeuristics:
     def __init__(self, rail_network: RailNetwork, time_limit: int = 120):
         """
-        Initialize RouteHeuristics with configurable time limit.
+        Initialiseer RouteHeuristics met een configureerbare tijdslimiet.
         
         Args:
-            rail_network: The rail network to work with
-            time_limit: Maximum time limit for routes in minutes
+            rail_network: Het spoornetwerk om mee te werken
+            time_limit: Maximale tijdslimiet voor routes in minuten
         """
         self.rail_network = rail_network
         self.time_limit = time_limit
@@ -17,61 +17,65 @@ class RouteHeuristics:
     def calculate_connection_value(self, connection: Connection, current_station: str, 
                                  current_route_time: int) -> float:
         """
-        Calculate the value of adding this connection to the route.
+        Bereken de waarde van het toevoegen van deze verbinding aan de route.
         
         Args:
-            connection: The connection being evaluated
-            current_station: The current station we're at
-            current_route_time: Current accumulated time in the route
+            connection: De verbinding die geëvalueerd wordt
+            current_station: Het huidige station waar we ons bevinden
+            current_route_time: Huidige opgetelde tijd in de route
             
         Returns:
-            float: Score representing the value of using this connection
+            float: Score die de waarde van het gebruik van deze verbinding weergeeft
         """
         if connection.used:
-            return float('-inf')  # Never reuse connections
+            # Nooit verbindingen hergebruiken
+            return float('-inf')  
             
-        # Get destination station
+        # Haal het bestemmingsstation op
         dest_station = connection.get_other_station(current_station)
         
-        # Count unused connections reachable from destination
+        # Tel ongebruikte verbindingen die bereikbaar zijn vanaf het bestemmingsstation
         nearby_unused = sum(
             1 for conn in self.rail_network.stations[dest_station].connections.values() 
             if not conn.used
         )
         
-        # Heavily penalize routes that would force us to create a new route
+        # Zwaar bestraffen als routes ons zouden dwingen een nieuwe route te creëren
         time_penalty = 0
-        buffer_time = self.time_limit - 10  # Leave 10-minute buffer from limit
+
+        # Laat een buffer van 10 minuten vanaf de limiet
+        buffer_time = self.time_limit - 10  
         if current_route_time + connection.distance > buffer_time:
-            time_penalty = 100  # Equal to cost of new route in scoring function
+            # Gelijk aan de kosten van een nieuwe route in de scoringsfunctie
+            time_penalty = 100  
             
-        # Score = nearby_unused - (normalized_time_cost) - new_route_penalty
+        # Score = nearby_unused - (genormaliseerde tijdskosten) - straf voor nieuwe route
         return nearby_unused - (connection.distance / self.time_limit) - time_penalty
     
     def get_best_connection(self, current_station: str, current_route_time: int, 
                           visited_stations: set = None) -> tuple[Connection, float]:
         """
-        Find the best available connection from current station.
+        Vind de beste beschikbare verbinding vanaf het huidige station.
         
         Args:
-            current_station: Station to look from
-            current_route_time: Current time accumulated in route
-            visited_stations: Set of stations already visited (optional)
+            current_station: Station waar vandaan gezocht wordt
+            current_route_time: Huidige opgetelde tijd in de route
+            visited_stations: Set van stations die al bezocht zijn (optioneel)
             
         Returns:
-            tuple[Connection, float]: Best connection and its score, or (None, float('-inf'))
-                                    if no valid connections exist
+            tuple[Connection, float]: Beste verbinding en de score ervan, of (None, float('-inf'))
+                                    als er geen geldige verbindingen bestaan
         """
         station = self.rail_network.stations[current_station]
         best_score = float('-inf')
         best_connection = None
         
         for dest, connection in station.connections.items():
-            # Skip if we've visited this station (to avoid loops)
+            # Overslaan als we dit station al bezocht hebben (om lussen te vermijden)
             if visited_stations and dest in visited_stations:
                 continue
                 
-            # Skip if adding this would exceed time limit
+            # Overslaan als het toevoegen hiervan de tijdslimiet zou overschrijden
             if current_route_time + connection.distance > self.time_limit:
                 continue
                 

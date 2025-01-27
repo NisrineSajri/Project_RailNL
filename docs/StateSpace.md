@@ -16,6 +16,7 @@ $P(n) = N \times (B-1)^{n-1}$
 - N = number of start stations
 - B = average branching factor
 - n = max route length
+
 r = $\sum_{k=2}^{24} P(k)$ ; total single route possibilities
 
 Full network:  
@@ -30,9 +31,25 @@ Full network:
     - De functie $P(n) = N \times (B-1)^{n-1}$ kan worden geïnterpreteerd als het aantal manieren waarop een route van lengte *(n)* kan worden gevormd, waarbij:
         - N is het aantal begin stations.
         - B is de gemiddelde vertakfactor, wat het aantal mogelijke verbindingen vanaf elk station vertegenwoordigt.
-        - n is het maximaal aantal stations in een route.
+        - n is het maximaal route lengte op dat moment
 
     - Dit helpt ons mogelijke route lengtes te genereren die passen binnen het tijdsframe.
 
 2. **Beperkingen**:
     - De maximale totale reistijd mag de opgegeven limiet niet overschrijden (dus niet meer dan 2 (of 3) uur in totaal).
+
+## De berekening van de State Space 
+$P(n) = N \times (B-1)^{n-1}$
+- N = number of start stations (dus 22 bij Holland en 61 bij nationaal)
+- B = average branching factor is het totaal verbindingen delen door het totaal stations (dus bij Holland is dat $\frac{28}{22}$ en bij Nationaal is dat $\frac{89}{61}$)
+
+r = $\sum_{k=2}^{24} P(k)$ ; total single route possibilities (dus Bij holland is dat $\frac{120}{5} = 24$ en bij Nationaal is dat $\frac{180}{5}$)
+  
+Totaal = $\sum_{i=1}^{7} r^{i}$ (bij Holland is dat 7 en Nationaal is dat 20)
+
+
+Holland:
+- $\sum_{i=1}^{7} (\sum_{k=2}^{24} 22 \times (0.27)^{n-1})^{i}$ = 9.1 $\times 10^{8}$
+
+Nationaal: 
+- $\sum_{i=1}^{20} (\sum_{k=2}^{36} 61 \times (0.46)^{n-1})^{i}$ = 1.6 $\times 10^{35}$
