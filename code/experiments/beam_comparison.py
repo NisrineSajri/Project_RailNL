@@ -4,7 +4,7 @@ import csv
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 
-# Add the parent directory to Python path so we can import the classes
+# Voeg de bovenliggende map toe aan het Python-pad zodat we de klassen kunnen importeren
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)  # Get the code directory
 sys.path.append(parent_dir)
@@ -16,7 +16,18 @@ from algorithms.beam_search_v3 import HeuristicRandomBFS
 from constants import NATIONAL_CONFIG
 
 def analyze_beam_width(min_width: int = 1, max_width: int = 9, runs_per_width: int = 5) -> List[Tuple[int, float]]:
-    """Analyze beam search V1 performance for different beam widths."""
+    """
+    Analyseer de prestaties van Beam Search V1 bij verschillende breedtes.
+
+    Args:
+        min_width (int): De minimale beam breedte die getest moet worden. Standaardwaarde is 1.
+        max_width (int): De maximale beam breedte die getest moet worden. Standaardwaarde is 9.
+        runs_per_width (int): Het aantal uitvoeringen per beam breedte. Standaardwaarde is 5.
+
+    Returns:
+        List[Tuple[int, float]]: Een lijst met tuples waarin elke tuple de breedte bevat 
+        en de gemiddelde kwaliteitsscore voor die breedte.
+    """
     network = RailNetwork()
     network.load_stations(NATIONAL_CONFIG['stations_file'])
     network.load_connections(NATIONAL_CONFIG['connections_file'])
@@ -44,7 +55,18 @@ def analyze_beam_width(min_width: int = 1, max_width: int = 9, runs_per_width: i
     return results
 
 def analyze_beam_width_v2(min_width: int = 1, max_width: int = 9, runs_per_width: int = 5) -> List[Tuple[int, float]]:
-    """Analyze beam search V2 performance for different beam widths."""
+    """
+    Analyseer de prestaties van Beam Search V2 bij verschillende breedtes.
+
+    Args:
+        min_width (int): De minimale beam breedte die getest moet worden. Standaardwaarde is 1.
+        max_width (int): De maximale beam breedte die getest moet worden. Standaardwaarde is 9.
+        runs_per_width (int): Het aantal uitvoeringen per beam breedte. Standaardwaarde is 5.
+
+    Returns:
+        List[Tuple[int, float]]: Een lijst met tuples waarin elke tuple de breedte bevat 
+        en de gemiddelde kwaliteitsscore voor die breedte.
+    """
     network = RailNetwork()
     network.load_stations(NATIONAL_CONFIG['stations_file'])
     network.load_connections(NATIONAL_CONFIG['connections_file'])
@@ -72,7 +94,18 @@ def analyze_beam_width_v2(min_width: int = 1, max_width: int = 9, runs_per_width
     return results
 
 def analyze_beam_width_v3(min_width: int = 1, max_width: int = 9, runs_per_width: int = 5) -> List[Tuple[int, float]]:
-    """Analyze HeuristicRandomBFS (V3) performance for different widths."""
+    """
+    Analyseer de prestaties van HeuristicRandomBFS (Beam Search V3) bij verschillende breedtes.
+
+    Args:
+        min_width (int): De minimale beam breedte die getest moet worden. Standaardwaarde is 1.
+        max_width (int): De maximale beam breedte die getest moet worden. Standaardwaarde is 9.
+        runs_per_width (int): Het aantal uitvoeringen per beam breedte. Standaardwaarde is 5.
+
+    Returns:
+        List[Tuple[int, float]]: Een lijst met tuples waarin elke tuple de breedte bevat 
+        en de gemiddelde kwaliteitsscore voor die breedte.
+    """
     network = RailNetwork()
     network.load_stations(NATIONAL_CONFIG['stations_file'])
     network.load_connections(NATIONAL_CONFIG['connections_file'])
@@ -100,7 +133,18 @@ def analyze_beam_width_v3(min_width: int = 1, max_width: int = 9, runs_per_width
 
 def plot_comparison(results1: List[Tuple[int, float]], results2: List[Tuple[int, float]], 
                    results3: List[Tuple[int, float]], filename: str = 'beam_search_comparison.png'):
-    """Plot and save the comparison results for all three versions."""
+    """
+    Genereer en sla een grafiek op waarin de prestaties van de drie versies van Beam Search worden vergeleken.
+
+    Args:
+        results1 (List[Tuple[int, float]]): Resultaten van Beam Search V1.
+        results2 (List[Tuple[int, float]]): Resultaten van Beam Search V2.
+        results3 (List[Tuple[int, float]]): Resultaten van HeuristicRandomBFS (Beam Search V3).
+        filename (str): De naam van het bestand waarin de grafiek wordt opgeslagen. Standaardwaarde is 'beam_search_comparison.png'.
+
+    Returns:
+        None: Slaat de gegenereerde grafiek op als een afbeelding in de map 'results'.
+    """
     widths1, qualities1 = zip(*results1)
     widths2, qualities2 = zip(*results2)
     widths3, qualities3 = zip(*results3)
@@ -122,7 +166,18 @@ def plot_comparison(results1: List[Tuple[int, float]], results2: List[Tuple[int,
 
 def save_comparison_results(results1: List[Tuple[int, float]], results2: List[Tuple[int, float]], 
                           results3: List[Tuple[int, float]], filename: str = 'beam_search_comparison.csv'):
-    """Save comparison results to CSV file for all three versions."""
+    """
+    Sla de vergelijking van resultaten van de drie versies van Beam Search op in een CSV-bestand.
+
+    Args:
+        results1 (List[Tuple[int, float]]): Resultaten van Beam Search V1.
+        results2 (List[Tuple[int, float]]): Resultaten van Beam Search V2.
+        results3 (List[Tuple[int, float]]): Resultaten van HeuristicRandomBFS (Beam Search V3).
+        filename (str): De naam van het bestand waarin de resultaten worden opgeslagen. Standaardwaarde is 'beam_search_comparison.csv'.
+
+    Returns:
+        None: Slaat de resultaten op in de map 'results' als een CSV-bestand.
+    """
     results_dir = os.path.join(current_dir, 'results')
     os.makedirs(results_dir, exist_ok=True)
     
@@ -143,11 +198,11 @@ if __name__ == "__main__":
     print("\nAnalyzing Beam Search V3 (HeuristicBFS)...")
     results_v3 = analyze_beam_width_v3(min_width=1, max_width=9, runs_per_width=5)
     
-    # Save results
+    # Sla resultaten op
     save_comparison_results(results_v1, results_v2, results_v3)
     plot_comparison(results_v1, results_v2, results_v3)
     
-    # Print best configurations
+    # Print de beste configurations
     best_width_v1, best_quality_v1 = max(results_v1, key=lambda x: x[1])
     best_width_v2, best_quality_v2 = max(results_v2, key=lambda x: x[1])
     best_width_v3, best_quality_v3 = max(results_v3, key=lambda x: x[1])
