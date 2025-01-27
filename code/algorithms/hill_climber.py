@@ -25,8 +25,8 @@ class HillClimber:
         # Houd gebruikte verbindingen globaal bij
         self.used_connections = set()  
 
-        if seed is not None:
-            random.seed(seed)
+        # if seed is not None:
+        #     random.seed(seed)
 
         self.current_routes = self.generate_random_routes()
         self.update_connection_count()
