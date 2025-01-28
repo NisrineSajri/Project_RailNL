@@ -1,6 +1,35 @@
-# Rail Network Optimization
-De Nederlandse overheid wil het treinverkeer efficiënter en duurzamer maken door het spoornetwerk te optimaliseren. Dit project bevat verschillende algoritmen om de kwaliteit van een spoornetwerk te evalueren en te verbeteren, waarbij het aan ons de taak was om de trajecten zo efficiënt mogelijk in te plannen. De resultaten omvatten onder andere de kwaliteitsscore van de oplossing en de gegenereerde treinroutes.
+# **RailNL**
 
+Voor deze case hebben wij gewerkt aan het ontwerpen van een efficiënt lijnennetwerk voor intercitytreinen in Nederland. Ons doel was om trajecten te creëren die niet alleen zoveel mogelijk verbindingen bedienen, maar ook een zo hoog mogelijke kwaliteitsscore \(K\) behalen: 
+
+$K = p \cdot 10000 - (T \cdot 100 + \text{Min})$
+
+Waarbij:  
+- K : de kwaliteit van de lijnvoering,  
+- p : de fractie van de bereden verbindingen (tussen 0 en 1),  
+- T : het aantal trajecten,  
+- Min : het totaal aantal minuten in alle trajecten samen.  
+
+### **Stap 1: Noord- en Zuid-Holland**  
+Onze eerste stap was gericht op de provincies Noord- en Zuid-Holland. Dit gebied bevat 22 intercitystations en hun verbindingen, inclusief reistijden. Ons doel was om maximaal 7 of minder trajecten te ontwerpen, waarbij elk traject binnen een tijdsframe van 2 uur moet blijven.
+
+### **Stap 2: Heel Nederland**  
+Na het voltooien van de lijnvoering voor Noord- en Zuid-Holland hebben we onze aanpak uitgebreid naar heel Nederland. Dit vergde een grotere schaal en complexiteit: maximaal 20 trajecten, waarbij elk traject binnen een tijdsframe van 3 uur moest blijven. Hier golden dezelfde optimalisatiecriteria, met als doel om zoveel mogelijk verbindingen efficiënt te bedienen en \(K\) te maximaliseren.  
+
+---
+
+### **De gebruikte algoritmes**  
+
+Voor het vinden van de optimale lijnvoering hebben we gebruikgemaakt van verschillende algoritmes, elk met hun eigen aanpak:  
+
+1. **Random**: Een basisaanpak waarbij trajecten willekeurig worden gegenereerd om als startpunt te dienen.  
+2. **Greedy**: Een algoritme dat als startstation steeds voor een station kiest met het minst aantal verbindingen.
+3. **Beam Greedy**: Een algoritme dat verbindingen selecteert met de meeste ongebruikte stations.
+4. **Beam Greedy Random**: Combineert de beam greedy algoritme met willekeurigheid, zodat er meer variatie en robuustheid in de oplossingen ontstaat.  
+5. **Beam Heuristics Random**: Het algoritme maakt gebruik van een heuristiek die rekening houdt met de tijd die nodig is om een nieuwe route toe te voegen, het aantal ongebruikte stations en een penalty voor het starten van een nieuw traject.
+6. **Hill Climber**: Een iteratief optimalisatie-algoritme dat kleine wijzigingen aanbrengt in een willekeurige lijnvoering, waarbij het kan starten vanaf een willekeurig station of de route volledig vervangt. Het proces gaat door zolang de score \(K\) verbetert.
+7. **Dijkstra**:
+8. **A\***: 
 
 ## Aan de slag
 
@@ -43,13 +72,13 @@ Kies uit:
 
 **Voorbeelden**
 
-Voer greedy algoritmen uit op de nationale dataset:
+Voer het greedy algoritme uit op de nationale dataset:
 
 ```
 python3 main.py --algorithm greedy --dataset national
 ```
 
-Voer het Random Algorithm uit op de nationale dataset met 5000 iteraties:
+Voer het Random algoritme uit op de nationale dataset met 5000 iteraties:
 ```
 python3 main.py --algorithm random --dataset national --iterations 5000
 ``` 
