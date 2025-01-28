@@ -6,8 +6,10 @@ import folium
 # https://realpython.com/python-folium-web-maps-from-data/ 
 
 # We halen hier de data op van de coördinaten en de verbindingen van de stations
-stations = pd.read_csv('data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
-connections = pd.read_csv('data/ConnectiesNationaal.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
+stations = pd.read_csv('data/StationsHolland.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
+
+# distance weghalen uit csv als we algoritmes hebben uitgewerkt
+connections = pd.read_csv('data/ConnectiesHolland.csv', header=None, names=['station1', 'station2', 'distance'], skiprows=1)
 
 # We maken een dictionary met de coördinaten van elk station gekoppeld aan het bijbehorende station
 station_coordinate = {}
@@ -18,7 +20,7 @@ for index, row in stations.iterrows():
     station_coordinate[station] = {'y': y_coordinate, 'x': x_coordinate}
 
 # We creëren een kaart gezoomed op Nederland
-m = folium.Map(location=[52.1326, 4.2913], zoom_start=7)
+m = folium.Map(location=[52.1326, 4.2913], zoom_start=8)
 
 # Voeg markers toe voor de stations
 for station, coordinate in station_coordinate.items():
@@ -38,5 +40,6 @@ for _, row in connections.iterrows():
         ).add_to(m)
 
 # we slaan de map op in een html file in de visualization map
-m.save("code/visualization/visualization_map_nationaal.html")
+print("For the visualization of the connections of Holland go to visualization_map_holland.html")
+m.save("visualization/visualization_map_holland.html")
 
