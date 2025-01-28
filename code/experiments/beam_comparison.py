@@ -10,9 +10,9 @@ parent_dir = os.path.dirname(current_dir)  # Get the code directory
 sys.path.append(parent_dir)
 
 from classes.rail_network import RailNetwork
-from algorithms.beam_search import BeamSearchAlgorithm
-from algorithms.beam_search_v2 import BeamSearchAlgorithmV2
-from algorithms.beam_search_v3 import HeuristicRandomBFS
+from algorithms.beam_greedy import BeamSearchAlgorithm
+from algorithms.beam_greedy_random import BeamSearchAlgorithmV2
+from algorithms.beam_heuristics_random import BeamSearchAlgorithmV3
 from constants import NATIONAL_CONFIG
 
 def analyze_beam_width(min_width: int = 1, max_width: int = 9, runs_per_width: int = 5) -> List[Tuple[int, float]]:
@@ -116,7 +116,7 @@ def analyze_beam_width_v3(min_width: int = 1, max_width: int = 9, runs_per_width
         width_scores = []
         
         for run in range(runs_per_width):
-            algorithm = HeuristicRandomBFS(
+            algorithm = BeamSearchAlgorithmV3(
                 network,
                 time_limit=NATIONAL_CONFIG['time_limit'],
                 max_routes=NATIONAL_CONFIG['max_routes']
