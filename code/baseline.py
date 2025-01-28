@@ -13,7 +13,7 @@ from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 visualization_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'visualization')
 os.makedirs(visualization_dir, exist_ok=True)
 
-def analyze_random_solutions(config: dict, iterations: int = 1000, seed: int = 42) -> Tuple[List[float], dict]:
+def analyze_random_solutions(config: dict, iterations: int = 10000000000, seed: int = 42) -> Tuple[List[float], dict]:
     """
     Run multiple iterations of the random algorithm and analyze the results.
     
@@ -79,17 +79,7 @@ def plot_results(scores: List[float], stats: dict, dataset: str, save_path: str 
     """
     plt.figure(figsize=(15, 15))
     
-    # Plot 1: Score progressie
-    plt.subplot(3, 1, 1)
-    plt.plot(range(len(scores)), scores, alpha=0.7, color='#0B2447')
-    plt.axhline(stats['mean'], color='#ff4444', linestyle='--', 
-                label=f'Mean: {stats["mean"]:.2f} (σ: {stats["std"]:.2f})')
-    plt.title(f'Score Progression over Iterations - {dataset.upper()} Dataset')
-    plt.xlabel('Iteration')
-    plt.ylabel('Quality Score')
-    plt.legend()
-    
-    # Plot 2: Verdeling van scores
+    # Plot: Verdeling van scores
     plt.subplot(3, 1, 2)
     sns.histplot(scores, kde=True, color='#0B2447', bins=30)
     plt.axvline(stats['mean'], color='#ff4444', linestyle='--', 
@@ -97,17 +87,6 @@ def plot_results(scores: List[float], stats: dict, dataset: str, save_path: str 
     plt.title('Distribution of Quality Scores')
     plt.xlabel('Quality Score')
     plt.ylabel('Count')
-    plt.legend()
-    
-    # Plot 3: Verdeling van route aantallen
-    plt.subplot(3, 1, 3)
-    route_counts = stats['route_distribution']
-    plt.bar(route_counts.keys(), route_counts.values(), color='#0B2447', alpha=0.7)
-    plt.axvline(stats['avg_routes'], color='#ff4444', linestyle='--',
-                label=f'Avg Routes: {stats["avg_routes"]:.2f}')
-    plt.title('Distribution of Route Counts')
-    plt.xlabel('Number of Routes')
-    plt.ylabel('Frequency')
     plt.legend()
     
     plt.tight_layout()
