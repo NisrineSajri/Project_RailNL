@@ -5,7 +5,7 @@ from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.heuristics import RouteHeuristics
 
-class HeuristicRandomBFS:
+class BeamSearchAlgorithmV3:
     def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
         """
         Initialize HeuristicRandomBFS.
