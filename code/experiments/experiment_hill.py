@@ -1,9 +1,17 @@
 import csv
 import itertools
 import matplotlib.pyplot as plt
+import os
 from classes.rail_network import RailNetwork
 from algorithms.hill_climber import HillClimber
 from copy import deepcopy  # Import deepcopy voor volledige objectkopieën
+
+# Definieer het pad naar de results directory
+current_dir = os.path.dirname(os.path.abspath(__file__))  # experiments directory
+results_dir = os.path.join(current_dir, 'results')
+
+# Zorg ervoor dat de results directory bestaat
+os.makedirs(results_dir, exist_ok=True)
 
 def parameter_tuning(hill_climber_class, network, iterations_list, runs_list, max_routes_list, time_limit_list, output_file, plot_file):
     quality_scores = []
@@ -32,8 +40,9 @@ def parameter_tuning(hill_climber_class, network, iterations_list, runs_list, ma
         avg_score = sum(run_scores) / len(run_scores)
         quality_scores.append((iterations, runs, max_routes, time_limit, avg_score))
 
-    # Sla de resultaten op in een CSV-bestand
-    with open(output_file, "w", newline="") as file:
+    # Sla de resultaten op in een CSV-bestand in de results directory
+    output_path = os.path.join(results_dir, output_file)
+    with open(output_path, "w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Iterations", "Runs", "Max Routes", "Time Limit", "Average Quality Score"])
         for iteration, run, max_routes, time_limit, avg_score in quality_scores:
@@ -54,8 +63,10 @@ def parameter_tuning(hill_climber_class, network, iterations_list, runs_list, ma
     plt.ylabel("Runs")
     plt.grid(True)
 
-    plt.savefig(plot_file)
-    print(f"Plot saved to {plot_file}.")
+    # Sla de plot op in de results directory
+    plot_path = os.path.join(results_dir, plot_file)
+    plt.savefig(plot_path)
+    print(f"Plot saved to {plot_path}.")
     plt.close()
 
 def load_network(stations_file: str, connections_file: str) -> RailNetwork:

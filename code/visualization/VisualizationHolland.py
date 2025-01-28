@@ -40,5 +40,5 @@ for _, row in connections.iterrows():
         ).add_to(m)
 
 # we slaan de map op in een html file in de visualization map
-m.save("code/visualization/visualization_map_holland.html")
+m.save("visualization/visualization_map_holland.html")
 
