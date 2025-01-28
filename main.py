@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-
+import argparse
+from typing import List, Type
 import os
 import sys
-import argparse
 
-# Voeg de juiste directories toe aan Python path
+# Voeg de bovenliggende directory toe aan de Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 
@@ -20,36 +19,59 @@ from code.algorithms.a_star_algorithm import AStarAlgorithm
 from code.algorithms.dijkstra_algorithm import DijkstraAlgorithm
 from code.constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 
-def parse_arguments():
-    """Verwerk command line argumenten."""
-    parser = argparse.ArgumentParser(description='Rail Netwerk Route Optimalisatie')
+def run_algorithm(algorithm_class, network: RailNetwork, config: dict, iterations: int = None) -> None:
+    """
+    Voer het opgegeven algoritme uit en druk de resultaten af.
     
+    Argumenten:
+        algorithm_class: Klasse van het algoritme om uit te voeren
+        network: RailNetwork instantie
+        config: Configuratie dictionary met max_routes en time_limit
+        iterations: Aantal iteraties (alleen gebruikt voor RandomAlgorithm)
+    """
+    # Initialiseer het algoritme met dataset-specifieke parameters
+    algorithm = algorithm_class(
+        network, 
+        time_limit=config['time_limit'], 
+        max_routes=config['max_routes']
+    )
+    
+    # Gebruik alleen iteraties voor RandomAlgorithm
+    if isinstance(algorithm, RandomAlgorithm):
+        best_quality, best_routes = algorithm.find_best_solution(iterations=iterations or 1000)
+    else:
+        best_quality, best_routes = algorithm.find_best_solution()
+    
+    stats = SolutionStatistics(best_quality, best_routes, network)
+    print(f"\nResults for {algorithm_class.__name__}:")
+    stats.print_stats()
+
+def main():
+    parser = argparse.ArgumentParser(description='Run rail network optimization algorithms')
     parser.add_argument('--dataset', type=str, choices=['holland', 'national'], 
                        default='holland', help='Dataset om te gebruiken (holland/national)')
-    
+
     parser.add_argument('--algorithm', type=str, 
                        choices=['random', 'greedy', 'beam_greedy', 'beam_greedy_random',
                                'beam_heuristics_random', 'hill_climber', 'a_star', 'dijkstra'],
                        default='random', help='Algoritme om te gebruiken voor optimalisatie')
-    
+
     parser.add_argument('--iterations', type=int, default=1000,
                        help='Aantal iteraties voor toepasselijke algoritmes')
     
-    return parser.parse_args()
-
-def create_algorithm(name, network, config):
-    """
-    Maak een instantie van het gekozen algoritme.
+    args = parser.parse_args()
     
-    Args:
-        name: Naam van het te gebruiken algoritme
-        network: Het railnetwerk om mee te werken
-        config: Configuratie met tijdslimiet en maximum aantal routes
+    try:
+        # Selecteer configuratie op basis van dataset
+        config = HOLLAND_CONFIG if args.dataset == 'holland' else NATIONAL_CONFIG
         
-    Returns:
-        Een instantie van het gekozen algoritme
-    """
-    algorithms = {
+        # Initialiseer netwerk
+        network = RailNetwork()
+        network.load_stations(config['stations_file'])
+        network.load_connections(config['connections_file'])
+        
+        # Initialiseer netwerk
+        algorithms = {
         'random': RandomAlgorithm,
         'greedy': GreedyAlgorithm,
         'beam_greedy': BeamSearchAlgorithm,
@@ -59,37 +81,28 @@ def create_algorithm(name, network, config):
         'a_star': AStarAlgorithm,
         'dijkstra': DijkstraAlgorithm
     }
-    
-    if name not in algorithms:
-        raise ValueError(f"Onbekend algoritme: {name}")
         
-    return algorithms[name](network, time_limit=config['time_limit'], 
-                          max_routes=config['max_routes'])
-
-def main():
-    """
-    Hoofdfunctie voor het uitvoeren van de rail netwerk optimalisatie.
-    Verwerkt command-line argumenten en voert het gekozen algoritme uit.
-    """
-    args = parse_arguments()
-    
-    # Kies de juiste configuratie
-    config = NATIONAL_CONFIG if args.dataset == 'national' else HOLLAND_CONFIG
-    
-    # Initialiseer het netwerk
-    network = RailNetwork()
-    
-    # Laad de data
-    network.load_stations(config['stations_file'])
-    network.load_connections(config['connections_file'])
-    
-    # Maak en voer het algoritme uit
-    algorithm = create_algorithm(args.algorithm, network, config)
-    quality, routes = algorithm.find_best_solution(args.iterations)
-    
-    # Maak en toon statistieken
-    stats = SolutionStatistics(quality, routes, network)
-    stats.print_stats()
-    
+        if args.algorithm == 'all':
+            # Voer alle algoritmen uit
+            for algo_name, algo_class in algorithms.items():
+                if algo_name == 'random':
+                    iterations = args.iterations
+                else:
+                    iterations = None
+                run_algorithm(algo_class, network, config, iterations)
+        else:
+            # Voer specifiek algoritme uit
+            algo_class = algorithms[args.algorithm]
+            if args.algorithm == 'random':
+                iterations = args.iterations
+            else:
+                iterations = None
+            run_algorithm(algo_class, network, config, iterations)
+            
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"Config being used: {config}")
+        
 if __name__ == "__main__":
     main()
