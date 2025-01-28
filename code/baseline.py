@@ -3,10 +3,15 @@ import matplotlib.pyplot as plt
 from typing import List, Tuple
 import seaborn as sns
 import argparse
+import os
 from collections import defaultdict
 from classes.rail_network import RailNetwork
 from algorithms.random_algorithm import RandomAlgorithm
 from constants import HOLLAND_CONFIG, NATIONAL_CONFIG
+
+# Zorg ervoor dat de visualization directory bestaat
+visualization_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'visualization')
+os.makedirs(visualization_dir, exist_ok=True)
 
 def analyze_random_solutions(config: dict, iterations: int = 1000, seed: int = 42) -> Tuple[List[float], dict]:
     """
@@ -140,9 +145,10 @@ def main():
     print(f"Average number of routes: {stats['avg_routes']:.2f}")
     print(f"Average connections used: {stats['avg_connections']:.2f}")
     
-    # Maak visualisatie
-    plot_results(scores, stats, args.dataset, 
-                save_path=f"baseline_analysis_{args.dataset}.png")
+    # Maak visualisatie en sla op in visualization directory
+    save_path = os.path.join(visualization_dir, f"baseline_analysis_{args.dataset}.png")
+    plot_results(scores, stats, args.dataset, save_path=save_path)
+    print(f"Visualization saved to {save_path}")
 
 if __name__ == "__main__":
     main()
