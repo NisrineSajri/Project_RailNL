@@ -31,8 +31,8 @@ python3 main.py --help
 --algorithm: Specificeert welk algoritme moet worden uitgevoerd. 
 
 Kies uit:
-- random, bfs, bfs_v2, beam, beam_v2, beam_v3, dijkstra, a_star, greedy, hill, of all.
-- Standaard: all.
+- random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, a_star, dijkstra.
+- Standaard: random
 
 --iterations: Het aantal iteraties voor het RandomAlgorithm. Standaard: 1000.
 
@@ -54,10 +54,10 @@ Voer het Random Algorithm uit op de nationale dataset met 5000 iteraties:
 python3 main.py --algorithm random --dataset national --iterations 5000
 ``` 
 
-Voer het Beam Search V2-algoritme uit:
+Voer het beam_greedy_random-algoritme uit:
 
 ```
-python3 main.py --algorithm beam_v2 --dataset holland
+python3 main.py --algorithm beam_greedy_random --dataset holland
 ```
 
 **Verwachte Output**
