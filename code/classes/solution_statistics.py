@@ -131,7 +131,7 @@ class SolutionStatistics:
                 writer.writerow(route_unique)
 
         # Maak een dictionary met coördinaten van elk station gekoppeld aan het station
-        stations = pd.read_csv('../data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
+        stations = pd.read_csv('data/StationsNationaal.csv', header=None, names=['station', 'y', 'x'], skiprows=1)
         station_coordinate = {}
         for index, row in stations.iterrows():
             station = row['station']
