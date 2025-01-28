@@ -1,5 +1,5 @@
 # Rail Network Optimization
-De Nederlandse overheid wil het treinverkeer efficiënter en duurzamer maken door het spoornetwerk te optimaliseren. Dit project bevat verschillende algoritmen om de kwaliteit van een spoornetwerk te evalueren en te verbeteren. De resultaten omvatten onder andere de kwaliteitsscore van de oplossing en de gegenereerde treinroutes.
+De Nederlandse overheid wil het treinverkeer efficiënter en duurzamer maken door het spoornetwerk te optimaliseren. Dit project bevat verschillende algoritmen om de kwaliteit van een spoornetwerk te evalueren en te verbeteren, waarbij het aan ons de taak was om de trajecten zo efficiënt mogelijk in te plannen. De resultaten omvatten onder andere de kwaliteitsscore van de oplossing en de gegenereerde treinroutes.
 
 
 ## Aan de slag
@@ -43,10 +43,10 @@ Kies uit:
 
 **Voorbeelden**
 
-Voer alle algoritmen uit op de Holland-dataset:
+Voer greedy algoritmen uit op de nationale dataset:
 
 ```
-python3 main.py --algorithm all --dataset holland
+python3 main.py --algorithm greedy --dataset national
 ```
 
 Voer het Random Algorithm uit op de nationale dataset met 5000 iteraties:
@@ -54,7 +54,7 @@ Voer het Random Algorithm uit op de nationale dataset met 5000 iteraties:
 python3 main.py --algorithm random --dataset national --iterations 5000
 ``` 
 
-Voer het beam_greedy_random-algoritme uit:
+Voer het beam_greedy_random-algoritme op de Holland-dataset uit:
 
 ```
 python3 main.py --algorithm beam_greedy_random --dataset holland
@@ -77,8 +77,12 @@ De hierop volgende lijst beschrijft de belangrijkste mappen en files in het proj
 - /code: bevat alle code van dit project
 - /code/algorithms: bevat de code voor algoritmes
 - /code/classes: bevat de zes benodigde classes voor deze case
-- /code/visualisation: bevat de code voor de visualisatie
-- /data: Bevat de benodigde databestanden voor het genereren van routes en het creëren van visualisaties.
+- /code/experiments: bevat experimenten van diverse algoritmen
+- /code/experiments/results: bevat de visualisaties van de experimenten
+- /code/tests: bevat de testen om de classes te testen
+- /data: Bevat de benodigde databestanden voor het genereren van routes en het creëren van visualisaties
+- /docs: bevat de documenten die we hebben geschreven in dit project
+- /visualization: bevat de code voor de visualisatie
 
 ## Auteurs 
 
