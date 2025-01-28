@@ -25,15 +25,11 @@ class HillClimber:
         # Houd gebruikte verbindingen globaal bij
         self.used_connections = set()  
 
-        # if seed is not None:
-        #     random.seed(seed)
+        if seed is not None:
+            random.seed(seed)
 
         self.current_routes = self.generate_random_routes()
         self.update_connection_count()
-
-        print("Gegenereerde Willekeurige Routes:")
-        for route in self.current_routes:
-            print(route)
 
     # Mijn connecties tellen niet goed, daarom dit 
     def update_connection_count(self):
