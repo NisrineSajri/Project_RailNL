@@ -8,12 +8,12 @@ from classes.heuristics import RouteHeuristics
 class BeamSearchAlgorithmV3:
     def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialize HeuristicRandomBFS.
+        Initialiseer HeuristicRandomBFS.
         
         Args:
-            rail_network: The rail network to work with
-            time_limit: Maximum time limit for routes in minutes
-            max_routes: Maximum number of routes allowed
+            rail_network: Het spoornetwerk om mee te werken
+            time_limit: Maximale tijdslimiet voor routes in minuten
+            max_routes: Maximaal toegestane aantal routes
         """
         self.rail_network = rail_network
         self.time_limit = time_limit
@@ -22,13 +22,13 @@ class BeamSearchAlgorithmV3:
 
     def create_route(self, start_station: str) -> Route:
         """
-        Create a single route using heuristic-guided random BFS.
+        Maak een enkele route met behulp van heuristisch gestuurde willekeurige BFS.
         
         Args:
-            start_station: Starting station name
+            start_station: Naam van het startstation
             
         Returns:
-            Route: Created route
+            Route: Gecreëerde route
         """
         route = Route()
         queue = deque([(start_station, [start_station], 0, set([start_station]))])
@@ -38,7 +38,7 @@ class BeamSearchAlgorithmV3:
         while queue:
             current_station, path, total_time, visited = queue.popleft()
             
-            # Get possible next moves using heuristics
+            # Verzamel mogelijke volgende zetten met behulp van heuristieken
             station = self.rail_network.stations[current_station]
             possible_moves = []
             
@@ -49,7 +49,7 @@ class BeamSearchAlgorithmV3:
                 if total_time + connection.distance > self.time_limit:
                     continue
                 
-                # Get heuristic score for this move
+                # Verkrijg heuristische score voor deze zet
                 score = self.heuristic.calculate_connection_value(
                     connection, current_station, total_time
                 )
@@ -58,33 +58,33 @@ class BeamSearchAlgorithmV3:
                     possible_moves.append((score, dest, connection))
             
             if possible_moves:
-                # Sort by score and take top half of moves
+                # Sorteer op score en neem beste helft van zetten
                 possible_moves.sort(reverse=True)
                 top_moves = possible_moves[:max(1, len(possible_moves) // 2)]
                 
-                # Add all top moves to queue for BFS exploration
+                # Voeg alle beste zetten toe aan wachtrij voor BFS verkenning
                 for score, next_station, connection in top_moves:
                     new_time = total_time + connection.distance
                     new_path = path + [next_station]
                     new_visited = visited | {next_station}
                     
-                    # Create temporary route to evaluate this path
+                    # Maak tijdelijke route om dit pad te evalueren
                     temp_route = Route()
                     temp_route.stations = new_path
                     temp_route.total_time = new_time
-                    # Add all connections in the path
+                    # Voeg alle verbindingen in het pad toe
                     for i in range(len(new_path) - 1):
                         station1 = new_path[i]
                         station2 = new_path[i + 1]
-                        # Find the connection between these stations
+                        # Zoek de verbinding tussen deze stations
                         conn = self.rail_network.stations[station1].connections[station2]
                         temp_route.connections_used.add(conn)
                     
-                    # Score this route
+                    # Score deze route
                     route_score = (
-                        len(temp_route.connections_used) * 100  # Value of connections
-                        - temp_route.total_time  # Time penalty
-                        + score * 10  # Heuristic future value
+                        len(temp_route.connections_used) * 100  # Waarde van verbindingen
+                        - temp_route.total_time  # Tijdstraf
+                        + score * 10  # Heuristische toekomstige waarde
                     )
                     
                     if route_score > best_score:
@@ -97,22 +97,22 @@ class BeamSearchAlgorithmV3:
 
     def create_solution(self) -> float:
         """
-        Create a complete solution with multiple routes.
+        Maak een complete oplossing met meerdere routes.
         
         Returns:
-            float: Quality score of the solution
+            float: Kwaliteitsscore van de oplossing
         """
-        # Reset all connections
+        # Reset alle verbindingen
         for conn in self.rail_network.connections:
             conn.used = False
         self.rail_network.routes.clear()
         
-        # Get stations sorted by number of connections
+        # Verkrijg stations gesorteerd op aantal verbindingen
         stations = list(self.rail_network.stations.keys())
         routes_created = 0
         
         while routes_created < self.max_routes:
-            # Try to find stations with unused connections
+            # Probeer stations te vinden met ongebruikte verbindingen
             stations_with_unused = [
                 station for station in stations
                 if any(not conn.used 
@@ -122,14 +122,14 @@ class BeamSearchAlgorithmV3:
             if not stations_with_unused:
                 break
             
-            # Prioritize stations with more unused connections
+            # Prioriteer stations met meer ongebruikte verbindingen
             stations_with_unused.sort(
                 key=lambda s: sum(1 for conn in self.rail_network.stations[s].connections.values() 
                                 if not conn.used),
                 reverse=True
             )
             
-            # Take from top 3 stations randomly to add variety
+            # Neem willekeurig één van de top 3 stations voor variatie
             start_station = random.choice(stations_with_unused[:min(3, len(stations_with_unused))])
             route = self.create_route(start_station)
             
@@ -143,13 +143,13 @@ class BeamSearchAlgorithmV3:
 
     def find_best_solution(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
         """
-        Find the best solution through multiple attempts.
+        Vind de beste oplossing door meerdere pogingen.
         
         Args:
-            iterations: Number of attempts to make
+            iterations: Aantal te maken pogingen
             
         Returns:
-            Tuple[float, List[Route]]: Best quality score and corresponding routes
+            Tuple[float, List[Route]]: Beste kwaliteitsscore en bijbehorende routes
         """
         best_quality = float('-inf')
         best_routes = []
