@@ -28,8 +28,8 @@ Voor het vinden van de optimale lijnvoering hebben we gebruikgemaakt van verschi
 4. **Beam Greedy Random**: Combineert de beam greedy algoritme met willekeurigheid, zodat er meer variatie en robuustheid in de oplossingen ontstaat.  
 5. **Beam Heuristics Random**: Het algoritme maakt gebruik van een heuristiek die rekening houdt met de tijd die nodig is om een nieuwe route toe te voegen, het aantal ongebruikte stations en een penalty voor het starten van een nieuw traject.
 6. **Hill Climber**: Een iteratief optimalisatie-algoritme dat kleine wijzigingen aanbrengt in een willekeurige lijnvoering, waarbij het kan starten vanaf een willekeurig station of de route volledig vervangt. Het proces gaat door zolang de score \(K\) verbetert.
-7. **Dijkstra's**: Een algoritme dat begint bij het station met de meeste ongebruikte verbindingen. Vervolgens gaan we steeds naar het station met de minste reistijd. Het algoritme kiest automatisch het verst bereikbare station als eindpunt. Dit wordt herhaald totdat alle verbindingen doorlopen zijn of het maximaal aantal trajecten bereikt is.
-8. **A\***: Een algoritme dat een uitbreiding is op Dijkstra's algoritme. Dit algoritme kiest, in tegenstelling tot Dijkstra's algoritme, als start station het station met de minste verbindingen. Ook worden routes gecombineerd als dit mogelijk is. Hierbij geldt dan dat de verbinding van het laatste station van traject 1 en het eerste station van traject 2 moet bestaan, om traject 1 en traject 2 te kunnen combineren. 
+7. **Dijkstra's**: Het algoritme start bij het station met de meeste ongebruikte verbindingen. Vervolgens worden de kortste paden naar alle andere stations berekend, waarbij alleen ongebruikte verbindingen worden meegenomen. Het algoritme kiest het station dat het verst bereikbaar is als eindstation van een traject.
+8. **A\***: Een algoritme dat een uitbreiding is op Dijkstra's algoritme. Dit algoritme kiest, in tegenstelling tot Dijkstra's algoritme, als start station het station met de minste verbindingen. Ook worden routes gecombineerd als dit mogelijk is. Hierbij geldt dan dat de verbinding van het laatste station van traject 1 naar het eerste station van traject 2 moet bestaan (om traject 1 en traject 2 te kunnen combineren). 
 
 ## Aan de slag
 **Handleiding voor het gebruik van de main-functie**
@@ -128,7 +128,7 @@ De hierop volgende lijst beschrijft de belangrijkste mappen en files in het proj
 - /code/tests: bevat de testen om de classes te testen
 - /data: Bevat de benodigde databestanden voor het genereren van routes en het creëren van visualisaties
 - /docs: bevat de documenten die we hebben geschreven in dit project
-- /visualization: bevat de code voor de visualisatie
+- /visualization: bevat de code voor de visualisatie en de png-bestanden
 
 ## Auteurs 
 
