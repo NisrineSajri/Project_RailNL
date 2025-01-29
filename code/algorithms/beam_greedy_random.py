@@ -7,13 +7,13 @@ import random
 class BeamSearchAlgorithmV2:
     def __init__(self, rail_network: RailNetwork, beam_width: int = 6, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialize BeamSearchAlgorithm with randomization.
+        Initialiseer BeamSearchAlgorithm met willekeurigheid.
         
         Args:
-            rail_network: The rail network to work with
-            beam_width: Number of best partial solutions to keep at each step
-            time_limit: Maximum time limit for routes in minutes
-            max_routes: Maximum number of routes allowed
+            rail_network: Het spoornetwerk om mee te werken
+            beam_width: Aantal beste deeloplossingen om te behouden in elke stap
+            time_limit: Maximale tijdslimiet voor routes in minuten
+            max_routes: Maximaal toegestane aantal routes
         """
         self.rail_network = rail_network
         self.beam_width = beam_width
@@ -22,19 +22,19 @@ class BeamSearchAlgorithmV2:
         
     def score_partial_route(self, route: Route) -> float:
         """
-        Score a partial route based on unused connections with added randomization.
+        Bereken een score voor een gedeeltelijke route met toegevoegde willekeurigheid.
         
         Args:
-            route: Route to score
+            route: Route om te scoren
             
         Returns:
-            float: Score based on unused connections and time efficiency with random factor
+            float: Score gebaseerd op ongebruikte verbindingen en tijdsefficiëntie met willekeurige factor
         """
-        # Base score from V1
+        # Basisscore van V1
         connection_value = len(route.connections_used) * 100
         time_penalty = route.total_time
         
-        # Add value for nearby unused connections
+        # Voeg waarde toe voor nabijgelegen ongebruikte verbindingen
         unused_nearby = sum(
             1 for conn in self.rail_network.connections 
             if not conn.used and any(
@@ -45,19 +45,19 @@ class BeamSearchAlgorithmV2:
         
         base_score = connection_value - time_penalty + unused_nearby * 10
         
-        # Add randomization factor (±5%)
+        # Voeg willekeurige factor toe (±5%)
         random_factor = random.uniform(0.95, 1.05)
         return base_score * random_factor
 
     def find_route_beam(self, start_station: str) -> Optional[Route]:
         """
-        Use beam search with randomization to find a route.
+        Gebruik beam search met willekeurigheid om een route te vinden.
         
         Args:
-            start_station: Starting station name
+            start_station: Naam van het startstation
             
         Returns:
-            Optional[Route]: Best route found, or None if no valid route exists
+            Optional[Route]: Beste gevonden route, of None als er geen geldige route bestaat
         """
         initial_route = Route()
         initial_route.stations = [start_station]
@@ -71,7 +71,7 @@ class BeamSearchAlgorithmV2:
             for _, current_station, path, total_time, visited, current_route in beam:
                 station = self.rail_network.stations[current_station]
                 
-                # Get all possible next connections
+                # Verzamel alle mogelijke volgende verbindingen
                 for dest, connection in station.connections.items():
                     if dest in visited:
                         continue
@@ -85,7 +85,7 @@ class BeamSearchAlgorithmV2:
                     new_route.total_time = new_time
                     new_route.connections_used = current_route.connections_used | {connection}
                     
-                    # Score with randomization
+                    # Score met willekeurigheid
                     score = self.score_partial_route(new_route)
                     
                     if score > best_score:
@@ -93,7 +93,7 @@ class BeamSearchAlgorithmV2:
                         best_route = new_route
                     
                     new_beam.append((
-                        -score,  # Negative for min-heap
+                        -score,  # Negatief voor min-heap
                         dest,
                         path + [dest],
                         new_time,
@@ -101,25 +101,25 @@ class BeamSearchAlgorithmV2:
                         new_route
                     ))
             
-            # Keep only the best beam_width candidates
+            # Behoud alleen de beste beam_width kandidaten
             beam = heapq.nsmallest(self.beam_width, new_beam)
         
         return best_route
 
     def create_solution(self, max_routes: int = None) -> float:
         """
-        Create a complete solution with multiple routes.
+        Maak een complete oplossing met meerdere routes.
         
         Args:
-            max_routes: Maximum number of routes allowed
+            max_routes: Maximaal toegestane aantal routes
             
         Returns:
-            float: Quality score of the solution
+            float: Kwaliteitsscore van de oplossing
         """
-        # Use instance default if not specified
+        # Gebruik standaardwaarde indien niet gespecificeerd
         max_routes = max_routes or self.max_routes
         
-        # Reset all connections
+        # Reset alle verbindingen
         for conn in self.rail_network.connections:
             conn.used = False
         self.rail_network.routes.clear()
@@ -128,7 +128,7 @@ class BeamSearchAlgorithmV2:
         all_stations = list(self.rail_network.stations.keys())
         
         while routes_created < max_routes:
-            # Sort stations by number of unused connections
+            # Sorteer stations op aantal ongebruikte verbindingen
             stations_by_connections = sorted(
                 all_stations,
                 key=lambda s: sum(1 for conn in self.rail_network.stations[s].connections.values() 
@@ -152,7 +152,7 @@ class BeamSearchAlgorithmV2:
             if not best_route:
                 break
                 
-            # Add the best route found to our solution
+            # Voeg de beste gevonden route toe aan onze oplossing
             for conn in best_route.connections_used:
                 conn.used = True
             self.rail_network.routes.append(best_route)
@@ -165,13 +165,13 @@ class BeamSearchAlgorithmV2:
 
     def find_best_solution(self, iterations: int = 1000) -> Tuple[float, List[Route]]:
         """
-        Find best solution through multiple attempts with randomization.
+        Vind de beste oplossing door meerdere pogingen met willekeurigheid.
         
         Args:
-            iterations: Number of attempts to make
+            iterations: Aantal te maken pogingen
             
         Returns:
-            Tuple[float, List[Route]]: Best quality score and corresponding routes
+            Tuple[float, List[Route]]: Beste kwaliteitsscore en bijbehorende routes
         """
         best_quality = float('-inf')
         best_routes = []
