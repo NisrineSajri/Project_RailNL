@@ -151,7 +151,7 @@ class SolutionStatistics:
 
         colors = [
             "red", "green", "yellow", "blue", "orange", "purple",
-            "cyan", "magenta", "lime", "darkblue", "teal", "gold",
+            "cyan", "gold", "lime", "darkblue", "teal", "magenta",
             "pink", "darkred", "violet", "olive", "indigo", "salmon",
             "turquoise", "plum"
         ]
