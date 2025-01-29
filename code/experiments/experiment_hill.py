@@ -4,16 +4,29 @@ import matplotlib.pyplot as plt
 import os
 from classes.rail_network import RailNetwork
 from algorithms.hill_climber import HillClimber
-from copy import deepcopy  # Import deepcopy voor volledige objectkopieën
+from copy import deepcopy 
 
 # Definieer het pad naar de results directory
-current_dir = os.path.dirname(os.path.abspath(__file__))  # experiments directory
+current_dir = os.path.dirname(os.path.abspath(__file__)) 
 results_dir = os.path.join(current_dir, 'results')
 
 # Zorg ervoor dat de results directory bestaat
 os.makedirs(results_dir, exist_ok=True)
 
 def parameter_tuning(hill_climber_class, network, iterations_list, runs_list, max_routes_list, time_limit_list, output_file, plot_file):
+    """
+    Voert parameter tuning uit voor een HillClimber-algoritme door verschillende combinaties van parameters te evalueren.
+
+    Args:
+        hill_climber_class (class): Klasse met het HillClimber-algoritme en een `find_best_solution`-methode.  
+        network (object): Het netwerk dat geoptimaliseerd wordt.  
+        iterations_list (list): Lijst met aantallen iteraties om te testen.  
+        runs_list (list): Lijst met aantallen runs per parametercombinatie.  
+        max_routes_list (list): Lijst met maximale aantallen routes.  
+        time_limit_list (list): Lijst met tijdslimieten (in seconden).  
+        output_file (str): Bestandsnaam voor het CSV-resultatenbestand.  
+        plot_file (str): Bestandsnaam voor de scatterplotvisualisatie. 
+    """
     quality_scores = []
 
     # Genereer alle combinaties van parameters
@@ -79,9 +92,6 @@ def load_network(stations_file: str, connections_file: str) -> RailNetwork:
     
     Returns:
         RailNetwork: Een geladen RailNetwork-object.
-    
-    Samenvatting:
-        Laadt een RailNetwork met de opgegeven station- en verbindingenbestanden.
     """
     network = RailNetwork()
     network.load_stations(stations_file)
@@ -103,7 +113,7 @@ if __name__ == "__main__":
     holland_plot_file = "holland_parameter_tuning_plot.png"
     print("Running Parameter Tuning for HillClimber on Holland network...")
     parameter_tuning(
-        hill_climber_class=HillClimber,  # Alleen de klasse doorgeven, initialisatie gebeurt in de functie
+        hill_climber_class=HillClimber,  
         network=holland_network,
         iterations_list=[500, 1000, 1500],  # Verschillende iteraties om te testen
         runs_list=[500, 1000, 1500],  # Verschillende runs om te testen
@@ -119,7 +129,7 @@ if __name__ == "__main__":
     national_plot_file = "national_parameter_tuning_plot.png"
     print("Running Parameter Tuning for HillClimber on National network...")
     parameter_tuning(
-        hill_climber_class=HillClimber,  # Alleen de klasse doorgeven, initialisatie gebeurt in de functie
+        hill_climber_class=HillClimber,  
         network=national_network,
         iterations_list=[500, 1000, 1500],  # Verschillende iteraties om te testen
         runs_list=[500, 1000, 1500],  # Verschillende runs om te testen
