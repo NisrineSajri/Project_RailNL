@@ -32,6 +32,9 @@ Voor het vinden van de optimale lijnvoering hebben we gebruikgemaakt van verschi
 8. **A\***: 
 
 ## Aan de slag
+**Handleiding voor het gebruik van de main-functie**
+
+Main.py is ontworpen om een rail netwerk optimalisatie uit te voeren, waarbij je verschillende algoritmes kunt kiezen om routes in een netwerk te vinden. Het script maakt gebruik van de command line om opties door te geven. Hieronder leggen we stap voor stap uit hoe je het script kunt gebruiken.
 
 **Vereisten**
 
@@ -49,46 +52,60 @@ conda install --file requirements.txt
 
 ### Gebruik
 
-De main.py-module kan worden uitgevoerd vanuit de commandoregel. Gebruik --help voor een overzicht van alle beschikbare opties.
+De main.py-module kan worden uitgevoerd vanuit de commandoregel. Gebruik "run --help" voor een overzicht van alle beschikbare opties.
 
 ```
-python3 main.py --help
+python3 main.py run --help
 ```
 
 **Commandoregelopties:**
- 
---algorithm: Specificeert welk algoritme moet worden uitgevoerd. 
 
-Kies uit:
-- random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, a_star, dijkstra.
-- Standaard: random
+Het script heeft drie hoofdmodi:
 
---iterations: Het aantal iteraties voor het RandomAlgorithm. Standaard: 1000.
+**run** – Voert een enkel algoritme uit.
 
---dataset: Selecteert de dataset:
-- holland (voor Nederland)
-- national (voor landelijke datasets)
-- Standaard: holland.
+- --algorithm: Kies het algoritme dat je wilt gebruiken. 
+    - Er zijn verschillende opties:
+        - random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, a_star, dijkstra
+        - Standaard wordt het random algoritme gekozen.
+- --dataset: Kies de dataset die je wilt gebruiken: holland of national.
+    - Standaard wordt holland gekozen.
+- --iterations: Stel het aantal iteraties in dat het algoritme moet doorlopen.
+    - Standaard is dit 1000 iteraties.
 
-**Voorbeelden**
+**experiment** – Voert experimenten uit met verschillende algoritmes en datasets.
 
-Voer het greedy algoritme uit op de nationale dataset:
+- --algorithm: Kies het algoritme dat je wilt gebruiken. 
+    - Er zijn verschillende opties:
+        - random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, a_star, dijkstra, all
+        - Standaard wordt all uitgekozen
+- --dataset: Kies de dataset die je wilt gebruiken: holland, national, both.
+    - Standaard wordt both gekozen.
+- --total-time: Stel de totale tijd (in seconden) in die voor de experimenten beschikbaar is.
+    - Standaard wordt 3600 seconden gekozen.
+- --run-time: Stel de tijdslimiet (in seconden) in voor elke run van het experiment.
+    - Standaard wordt 60 seconden gekozen.
 
-```
-python3 main.py --algorithm greedy --dataset national
-```
+**analyze** – Analyseert de resultaten van uitgevoerde experimenten.
+- Je hebt geen extra argumenten nodig, gewoon deze modus kiezen en het script zal de resultaten automatisch analyseren en visualiseren.
+
+
+### **Voorbeelden**
 
 Voer het Random algoritme uit op de nationale dataset met 5000 iteraties:
 ```
-python3 main.py --algorithm random --dataset national --iterations 5000
+python3 main.py run --algorithm random --dataset national --iterations 5000
 ``` 
-
-Voer het beam_greedy_random-algoritme op de Holland-dataset uit:
+Experimenten uitvoeren met alle algoritmes en beide datasets met een totale tijd van 7200 seconden en een tijdslimiet van 120 seconden voor elke run:
+```
+python3 main.py experiment --algorithm all --dataset both --total-time 7200 --run-time 120
 
 ```
-python3 main.py --algorithm beam_greedy_random --dataset holland
-```
+Resultaten van experimenten analyseren:
 
+```
+python3 main.py analyze
+```
 **Verwachte Output**
 
 Bij het uitvoeren van een algoritme wordt de volgende informatie weergegeven:
