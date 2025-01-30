@@ -1,4 +1,4 @@
-# a_star_algorithm.py
+# dijkstra_heuristic.py
 
 from heapq import heapify, heappop, heappush
 from typing import List, Tuple, Set
@@ -6,10 +6,10 @@ from classes.rail_network import RailNetwork
 from classes.route import Route
 from classes.connection import Connection
 
-class AStarAlgorithm:
+class DijkstraHeuristicAlgorithm:
     def __init__(self, rail_network: RailNetwork, time_limit: int = 120, max_routes: int = 7):
         """
-        Initialiseert AStarAlgorithm
+        Initialiseert Dijkstra's algoritme met heuristiek
         Args:
             rail_network: rail network
             time_limit: maximale tijdsduur van trajecten

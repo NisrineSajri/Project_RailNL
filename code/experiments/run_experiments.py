@@ -86,7 +86,7 @@ if __name__ == "__main__":
         'beam_greedy',
         'beam_heuristics_random',
         'hill_climber',
-        'a_star',
+        'dijkstra_heuristic',
         'dijkstra'
     ]
     

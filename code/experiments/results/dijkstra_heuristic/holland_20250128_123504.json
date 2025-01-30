@@ -1,5 +1,5 @@
 {
-  "algorithm": "a_star",
+  "algorithm": "dijkstra_heuristic",
   "dataset": "holland",
   "total_time": 60,
   "run_time": 60,

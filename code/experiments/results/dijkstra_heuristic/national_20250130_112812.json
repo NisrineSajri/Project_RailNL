@@ -1,0 +1,7 @@
+{
+  "algorithm": "dijkstra_heuristic",
+  "dataset": "national",
+  "total_time": 3600,
+  "run_time": 60,
+  "results": []
+}

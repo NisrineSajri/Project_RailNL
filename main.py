@@ -17,7 +17,7 @@ from code.algorithms.beam_greedy import BeamSearchAlgorithm
 from code.algorithms.beam_greedy_random import BeamSearchAlgorithmV2
 from code.algorithms.beam_heuristics_random import BeamSearchAlgorithmV3
 from code.algorithms.hill_climber import HillClimber
-from code.algorithms.a_star_algorithm import AStarAlgorithm
+from code.algorithms.dijkstra_heuristic import DijkstraHeuristicAlgorithm
 from code.algorithms.dijkstra_algorithm import DijkstraAlgorithm
 from code.constants import HOLLAND_CONFIG, NATIONAL_CONFIG
 from code.experiments.run_experiments import run_algorithm_experiments
@@ -36,7 +36,7 @@ def parse_arguments():
                            default='holland', help='Dataset om te gebruiken (holland/national)')
     run_parser.add_argument('--algorithm', type=str, 
                            choices=['random', 'greedy', 'beam_greedy', 'beam_greedy_random',
-                                   'beam_heuristics_random', 'hill_climber', 'a_star', 'dijkstra'],
+                                   'beam_heuristics_random', 'hill_climber', 'dijkstra_heuristic', 'dijkstra'],
                            default='random', help='Algoritme om te gebruiken voor optimalisatie')
     run_parser.add_argument('--iterations', type=int, default=1000,
                            help='Aantal iteraties voor toepasselijke algoritmes')
@@ -45,7 +45,7 @@ def parse_arguments():
     exp_parser = subparsers.add_parser('experiment', help='Voer experimenten uit')
     exp_parser.add_argument('--algorithm', type=str, 
                            choices=['random', 'greedy', 'beam_greedy', 'beam_greedy_random',
-                                   'beam_heuristics_random', 'hill_climber', 'a_star', 'dijkstra', 'all'],
+                                   'beam_heuristics_random', 'hill_climber', 'dijkstra_heuristic', 'dijkstra', 'all'],
                            default='all', help='Algoritme om te experimenteren')
     exp_parser.add_argument('--dataset', type=str, choices=['holland', 'national', 'both'],
                            default='both', help='Dataset voor experimenten')
@@ -78,7 +78,7 @@ def create_algorithm(name: str, network: RailNetwork, config: dict):
         'beam_greedy_random': BeamSearchAlgorithmV2,
         'beam_heuristics_random': BeamSearchAlgorithmV3,
         'hill_climber': HillClimber,
-        'a_star': AStarAlgorithm,
+        'dijkstra_heuristic': DijkstraHeuristicAlgorithm,
         'dijkstra': DijkstraAlgorithm
     }
     
@@ -122,7 +122,7 @@ def run_experiments(args) -> None:
     """
     if args.algorithm == 'all':
         algorithms = ['random', 'greedy', 'beam_greedy', 'beam_greedy_random',
-                     'beam_heuristics_random', 'hill_climber', 'a_star', 'dijkstra']
+                     'beam_heuristics_random', 'hill_climber', 'dijkstra_heuristic', 'dijkstra']
     else:
         algorithms = [args.algorithm]
     

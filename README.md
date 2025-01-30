@@ -29,7 +29,7 @@ Voor het vinden van de optimale lijnvoering hebben we gebruikgemaakt van verschi
 5. **Beam Heuristics Random**: Het algoritme maakt gebruik van een heuristiek die rekening houdt met de tijd die nodig is om een nieuwe route toe te voegen, het aantal ongebruikte stations en een penalty voor het starten van een nieuw traject.
 6. **Hill Climber**: Een iteratief optimalisatie-algoritme dat kleine wijzigingen aanbrengt in een willekeurige lijnvoering, waarbij het kan starten vanaf een willekeurig station of de route volledig vervangt. Het proces gaat door zolang de score \(K\) verbetert.
 7. **Dijkstra's**: Het algoritme start bij het station met de meeste ongebruikte verbindingen. Vervolgens worden de kortste paden naar alle andere stations berekend, waarbij alleen ongebruikte verbindingen worden meegenomen. Het algoritme kiest het station dat het verst bereikbaar is als eindstation van een traject.
-8. **A\***: Een algoritme dat een uitbreiding is op Dijkstra's algoritme. Dit algoritme kiest, in tegenstelling tot Dijkstra's algoritme, als start station het station met de minste verbindingen. Ook worden routes gecombineerd als dit mogelijk is. Hierbij geldt dan dat de verbinding van het laatste station van traject 1 naar het eerste station van traject 2 moet bestaan (om traject 1 en traject 2 te kunnen combineren). 
+8. **Dijkstra's Heuristic**: Een algoritme dat een uitbreiding is op Dijkstra's algoritme. Dit algoritme kiest, in tegenstelling tot Dijkstra's algoritme, als start station het station met de minste verbindingen. Ook worden routes gecombineerd als dit mogelijk is. Hierbij geldt dan dat de verbinding van het laatste station van traject 1 naar het eerste station van traject 2 moet bestaan (om traject 1 en traject 2 te kunnen combineren). 
 
 ## Aan de slag
 **Handleiding voor het gebruik van de main-functie**
@@ -66,7 +66,7 @@ Het script heeft drie hoofdmodi:
 
 - --algorithm: Kies het algoritme dat je wilt gebruiken. 
     - Er zijn verschillende opties:
-        - random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, a_star, dijkstra
+        - random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, dijkstra_heuristic, dijkstra
         - Standaard wordt het random algoritme gekozen.
 - --dataset: Kies de dataset die je wilt gebruiken: holland of national.
     - Standaard wordt holland gekozen.
@@ -77,7 +77,7 @@ Het script heeft drie hoofdmodi:
 
 - --algorithm: Kies het algoritme dat je wilt gebruiken. 
     - Er zijn verschillende opties:
-        - random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, a_star, dijkstra, all
+        - random, greedy, beam_greedy, beam_greedy_random, beam_heuristics_random, hill_climber, dijkstra_heuristic, dijkstra, all
         - Standaard wordt all uitgekozen
 - --dataset: Kies de dataset die je wilt gebruiken: holland, national, both.
     - Standaard wordt both gekozen.
